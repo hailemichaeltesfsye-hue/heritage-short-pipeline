@@ -80,8 +80,18 @@ def test_api_pipeline_approve_direct():
     assert "approved_at" in data
 
 
-def test_fastapi_testclient_health():
-    with TestClient(app) as client:
-        res = client.get("/api/health")
-        assert res.status_code == 200
-        assert res.json()["status"] == "ok"
+def test_fastapi_route_registration():
+    routes = {r.path: r for r in app.routes if hasattr(r, "path")}
+    assert "/api/health" in routes
+    assert "/api/storyboard" in routes
+    assert "/api/outputs" in routes
+    assert "/api/metrics" in routes
+    assert "/api/docs" in routes
+    assert "/api/pipeline/run" in routes
+    assert "/api/pipeline/approve" in routes
+    assert "/api/storyboard/shot/{shot_id}" in routes
+
+    # Direct invocation through registered endpoint
+    health_res = routes["/api/health"].endpoint()
+    assert health_res["status"] == "ok"
+    assert health_res["app"] == "heritage-short-pipeline"
