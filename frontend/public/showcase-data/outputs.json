@@ -1,13 +1,35 @@
 {
   "files": {
-    "final_16x9.mp4": false,
-    "final_9x16.mp4": false,
-    "radio_cut.mp4": false,
-    "subtitles.srt": false,
-    "audio_master_mixed.wav": false,
-    "music/score_normalized.wav": false,
-    "reference/character_sheet.png": false
+    "final_16x9.mp4": true,
+    "final_9x16.mp4": true,
+    "radio_cut.mp4": true,
+    "subtitles.srt": true,
+    "audio_master_mixed.wav": true,
+    "music/score_normalized.wav": true,
+    "reference/character_sheet.png": true
   },
-  "keyframes": [],
-  "narration": []
+  "keyframes": [
+    "shot_01",
+    "shot_02",
+    "shot_03",
+    "shot_04",
+    "shot_05",
+    "shot_06",
+    "shot_07",
+    "shot_08",
+    "shot_09",
+    "shot_10"
+  ],
+  "narration": [
+    "shot_01",
+    "shot_02",
+    "shot_03",
+    "shot_04",
+    "shot_05",
+    "shot_06",
+    "shot_07",
+    "shot_08",
+    "shot_09",
+    "shot_10"
+  ]
 }

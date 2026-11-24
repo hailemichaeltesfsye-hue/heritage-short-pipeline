@@ -46,19 +46,16 @@ def _run_async(coro: Coroutine[Any, Any, _T]) -> _T:
         return pool.submit(asyncio.run, coro).result()
 
 
+_CACHED_DISCOVERED_MODEL: Optional[str] = None
+
+
 def discover_gemini_tts_model(client: Any) -> Tuple[str, str]:
     """Discover live Gemini Flash audio model, prioritizing gemini-3.8-flash (no deprecated 2.5-flash)."""
-    try:
-        models = list(client.models.list())
-        available_names = [getattr(m, "name", "") for m in models if getattr(m, "name", "")]
-        for pref in PREFERRED_GEMINI_AUDIO_MODELS:
-            short_pref = pref.removeprefix("models/")
-            for name in available_names:
-                if name == pref or name.endswith(f"/{short_pref}") or short_pref in name:
-                    return name, "google-genai"
-    except Exception:
-        pass
-    return "models/gemini-3.8-flash", "google-genai"
+    global _CACHED_DISCOVERED_MODEL
+    if _CACHED_DISCOVERED_MODEL:
+        return _CACHED_DISCOVERED_MODEL, "google-genai"
+    _CACHED_DISCOVERED_MODEL = "models/gemini-3.8-flash"
+    return _CACHED_DISCOVERED_MODEL, "google-genai"
 
 
 def _parse_pcm_sample_rate(mime_type: str) -> int:
@@ -170,7 +167,7 @@ def _attempt_gemini_narration(
     from google import genai
     from google.genai import types
 
-    client = genai.Client(api_key=api_key)
+    client = genai.Client(api_key=api_key, http_options=types.HttpOptions(timeout=8000))
     primary_model, _ = discover_gemini_tts_model(client)
     candidate_models = [primary_model] + [m for m in PREFERRED_GEMINI_AUDIO_MODELS if m != primary_model]
 
@@ -180,40 +177,34 @@ def _attempt_gemini_narration(
     )
 
     last_error = "Gemini returned no audio"
-    for model_name in candidate_models[:2]:
-        for attempt in range(1, max_attempts + 1):
-            try:
-                response = client.models.generate_content(
-                    model=model_name,
-                    contents=prompt,
-                    config=types.GenerateContentConfig(
-                        response_modalities=["AUDIO"],
-                    ),
-                )
-                extracted = _extract_audio_part(response)
-                if not extracted:
-                    last_error = f"{model_name} returned empty AUDIO payload"
-                    break
-
-                raw_bytes, mime_type = extracted
-                _write_audio_bytes_as_wav(raw_bytes, mime_type, output_path)
-
-                dur = get_audio_duration(output_path)
-                rms = compute_wav_rms(output_path)
-                if dur <= 0.1 or rms < MIN_AUDIO_RMS:
-                    output_path.unlink(missing_ok=True)
-                    last_error = f"{model_name} produced silent audio (dur={dur:.2f}s, rms={rms:.6f})"
-                    break
-
-                return model_name, None
-            except Exception as exc:
-                last_error = f"{model_name} error: {exc}"
-                err_str = str(exc).upper()
-                is_transient = "503" in err_str or "UNAVAILABLE" in err_str or "429" in err_str or "RESOURCE_EXHAUSTED" in err_str
-                if is_transient and attempt < max_attempts:
-                    time.sleep(min(2 ** (attempt - 1), 4.0))
-                    continue
+    for model_name in candidate_models[:1]:
+        try:
+            response = client.models.generate_content(
+                model=model_name,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    response_modalities=["AUDIO"],
+                ),
+            )
+            extracted = _extract_audio_part(response)
+            if not extracted:
+                last_error = f"{model_name} returned empty AUDIO payload"
                 break
+
+            raw_bytes, mime_type = extracted
+            _write_audio_bytes_as_wav(raw_bytes, mime_type, output_path)
+
+            dur = get_audio_duration(output_path)
+            rms = compute_wav_rms(output_path)
+            if dur <= 0.1 or rms < MIN_AUDIO_RMS:
+                output_path.unlink(missing_ok=True)
+                last_error = f"{model_name} produced silent audio (dur={dur:.2f}s, rms={rms:.6f})"
+                break
+
+            return model_name, None
+        except Exception as exc:
+            last_error = f"{model_name} error: {exc}"
+            break
 
     return None, last_error
 
