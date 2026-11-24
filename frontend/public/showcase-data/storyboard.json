@@ -1,0 +1,158 @@
+﻿{
+  "is_valid": true,
+  "errors": [],
+  "storyboard": {
+    "title": "Hulum Neger Lebego New (Everything for Good)",
+    "language": "am",
+    "total_duration_sec": 74.0,
+    "style_block": {
+      "visual_tone": "Warm golden-hour Ethiopian highland cinematic realism with documentary emotional intimacy",
+      "lighting": "Soft natural morning and late afternoon sunlight, warm rim lighting, mountain atmospheric mist",
+      "color_palette": "Rich warm amber, terracotta red-brown earth, deep acacia green, muted woven white Netela textures",
+      "cinematography": "Arri Alexa look, 35mm anamorphic aesthetic, gentle organic camera drift, shallow depth of field"
+    },
+    "character_sheet": {
+      "protagonist": "Hailemichael Tesfaye, Ethiopian male with warm thoughtful eyes, gentle resilient posture",
+      "progression_stages": {
+        "boy_primary": "7-10 years old Ethiopian boy with spirited curiosity, wearing simple neat school sweater and khaki shorts in misty mountain towns",
+        "teen_student_deacon": "15-17 years old Ethiopian youth, disciplined and studious, dual life: wearing school uniform notebook in hand, and white liturgical Deacon vestment holding brass censer",
+        "young_adult_engineer": "20-22 years old Ethiopian university student, wearing crisp casual shirt, thoughtful focus in computer lab, blending spiritual grounding with software engineering passion"
+      }
+    },
+    "music_cues": [
+      {
+        "cue_id": "cue_01",
+        "start_sec": 0.0,
+        "end_sec": 20.0,
+        "mood": "Evocative, peaceful highland dawn with contemplative nostalgia",
+        "instrumentation": "Solo Ethiopian Masenqo melody over gentle acoustic guitar arpeggios and distant morning wind"
+      },
+      {
+        "cue_id": "cue_02",
+        "start_sec": 20.0,
+        "end_sec": 44.0,
+        "mood": "Tension and solemn sacred devotion through trials and spiritual calling",
+        "instrumentation": "Deep low cello drone, resonant church prayer chant echoes, quiet Kirar pluck"
+      },
+      {
+        "cue_id": "cue_03",
+        "start_sec": 44.0,
+        "end_sec": 74.0,
+        "mood": "Heartbreak shifting into resilient triumph, uplift, and tranquil gratitude",
+        "instrumentation": "Warm piano chords, blossoming string ensemble, uplifting acoustic Washint flute melody resolving peacefully"
+      }
+    ],
+    "shots": [
+      {
+        "shot_id": "shot_01",
+        "duration_sec": 6.0,
+        "shot_type": "extreme_wide_shot",
+        "visual_prompt": "Cinematic misty morning over Wegeltena town, Delanta Wereda highlands. Sun rays piercing cool blue morning fog, rolling eucalyptus hills and terracotta soil pathways. Warm golden-hour Ethiopian highland cinematic realism, soft natural lighting, warm amber and terracotta palette. A 7-year-old Ethiopian boy (young Hailemichael) walks along the path wrapped in a light cotton scarf.",
+        "motion_prompt": "Slow panoramic camera tracking shot gliding across the mist-shrouded green hills as golden morning light breaks through.",
+        "narration_am": "\u1273\u122a\u12ac \u12e8\u121a\u1300\u121d\u1228\u12cd \u1260\u12f0\u120b\u1295\u1273 \u12c8\u1228\u12f3\u1363 \u1260\u12c8\u1308\u120d\u1324\u1293 \u12a8\u1270\u121b \u1240\u12dd\u1243\u12db \u121b\u1208\u12f3\u12ce\u127d \u120b\u12ed \u1290\u12cd\u1362",
+        "subtitle_en": "My story begins in the cool mornings of Wegeltena, Delanta.",
+        "reason": "Establishes geographical roots, highland atmosphere, and childhood innocence.",
+        "seed": 10101
+      },
+      {
+        "shot_id": "shot_02",
+        "duration_sec": 7.0,
+        "shot_type": "medium_shot",
+        "visual_prompt": "Wegeltena Mesno Amba Primary School courtyard. Children in rustic school sweaters laughing, young 8-year-old Hailemichael sitting at a wooden bench writing with focus in an exercise book. Soft dappled daylight through highland trees, authentic Ethiopian rural schoolhouse architecture with stone and wood accents.",
+        "motion_prompt": "Gentle push-in toward the boy's focused face and notebook, capturing his early passion for learning.",
+        "narration_am": "\u12a8\u12a0\u1295\u12f0\u129b \u12a5\u1235\u12a8 \u12a0\u122b\u1270\u129b \u12ad\u134d\u120d \u12c8\u1308\u120d\u1324\u1293 \u1218\u1235\u1296 \u12a0\u121d\u1263 \u12a0\u1295\u12f0\u129b \u12f0\u1228\u1303 \u1275\u121d\u1205\u122d\u1275 \u1264\u1275 \u1270\u121b\u122d\u12a9\u1362",
+        "subtitle_en": "I studied Grades 1\u20134 at Wegeltena Mesno Amba Primary School.",
+        "reason": "Documents foundation years (Grades 1-4) at Mesno Amba Primary.",
+        "seed": 10102
+      },
+      {
+        "shot_id": "shot_03",
+        "duration_sec": 7.0,
+        "shot_type": "medium_wide_shot",
+        "visual_prompt": "A bustling street in Kombolcha town as afternoon sun warms the vibrant marketplace and distant hills. A dedicated Ethiopian teacher mother walking hand in hand with her 10-year-old son outside Kombolcha No. 1 Elementary School gate. Warm terracotta and acacia colors, cinematic documentary realism.",
+        "motion_prompt": "Smooth lateral tracking shot following mother and son as they approach the new school building.",
+        "narration_am": "\u1218\u121d\u1205\u122d \u12e8\u1290\u1260\u1228\u127d\u12cd \u12a5\u1293\u1274 \u12c8\u12f0 \u12ae\u121d\u1266\u120d\u127b \u1235\u1275\u12db\u12c8\u122d\u1363 \u12a0\u121d\u1235\u1270\u129b \u12ad\u134d\u120c\u1295 \u1241\u1325\u122d \u12a0\u1295\u12f5 \u1300\u1218\u122d\u12a9\u1362",
+        "subtitle_en": "When my teacher mother moved to Kombolcha, I continued Grade 5 there.",
+        "reason": "Marks family relocation to Kombolcha and mother's inspiring teaching influence.",
+        "seed": 10103
+      },
+      {
+        "shot_id": "shot_04",
+        "duration_sec": 8.0,
+        "shot_type": "close_up",
+        "visual_prompt": "A modest hospital ward in Kombolcha with soft warm evening window light. 12-year-old Hailemichael lying in a clean hospital bed in recovery after emergency surgery, a protective mother's hand holding his, vitals monitor softly glowing. Cinematic depth, warm amber relief, overcoming near-death crisis.",
+        "motion_prompt": "Subtle handheld breathing camera movement focusing on his slow, steady breathing and opening eyes of recovery.",
+        "narration_am": "\u1230\u1263\u1270\u129b \u12ad\u134d\u120d \u1235\u12f0\u122d\u1235 \u130d\u1295 \u1260\u12f5\u1295\u1308\u1270\u129b \u12e8\u1275\u122d\u134d \u12a0\u1295\u1300\u1275 \u1215\u1218\u121d \u1240\u12f6 \u1325\u1308\u1293 \u1270\u12f0\u122d\u130e \u12a8\u121e\u1275 \u12a0\u134b\u134d \u1270\u1228\u134d\u12a9\u1362",
+        "subtitle_en": "In Grade 7, emergency appendicitis surgery brought me back from death.",
+        "reason": "Pivotal near-death inflection point of survival and renewed appreciation for life.",
+        "seed": 10104
+      },
+      {
+        "shot_id": "shot_05",
+        "duration_sec": 8.0,
+        "shot_type": "medium_shot",
+        "visual_prompt": "Split composition resonance: 14-year-old Hailemichael studying Ge'ez parchment manuscripts by candlelight inside an Ethiopian Orthodox Abinet traditional church compound, contrasted with holding science textbooks outside Kombolcha Millennium Secondary School under golden afternoon skies.",
+        "motion_prompt": "Slow cinematic pan transitioning from ancient manuscript study to modern school homework notebooks.",
+        "narration_am": "\u12a8\u1235\u121d\u1295\u1270\u129b \u12ad\u134d\u120d \u1300\u121d\u122e \u12e8\u12a0\u1265\u1290\u1275 \u1275\u121d\u1205\u122d\u1275\u1293 \u12d8\u1218\u1293\u12ca \u1275\u121d\u1205\u122d\u1274\u1295 \u130e\u1295 \u1208\u130e\u1295 \u121b\u1235\u12ac\u12f5 \u12a8\u1263\u12f5 \u1348\u1270\u1293 \u1290\u1260\u122d\u1362",
+        "subtitle_en": "From Grade 8, balancing Abinet church study and modern school side by side was hard.",
+        "reason": "Shows rigorous dual discipline of traditional spiritual scholarship and modern secondary education.",
+        "seed": 10105
+      },
+      {
+        "shot_id": "shot_06",
+        "duration_sec": 8.0,
+        "shot_type": "medium_close_up",
+        "visual_prompt": "16-year-old Hailemichael vested as an ordained Ethiopian Orthodox Deacon in an ornate white vestment with golden embroidery, holding a brass censer with fragrant incense curling into amber sunbeams inside church courtyard, before seamlessly checking an organized study schedule notebook.",
+        "motion_prompt": "Gentle upward tilt from the smoking censer to his calm, disciplined, and mature expression.",
+        "narration_am": "\u127d\u130d\u1229\u1295 \u1270\u124b\u1241\u121c \u1260\u12a0\u1235\u1228\u129b \u12ad\u134d\u120d \u12f2\u1241\u1293 \u1270\u1240\u1260\u120d\u12a9\u1364 \u12a8\u1218\u12f0\u1260\u129b \u12ad\u134d\u120d \u12cd\u132a \u130a\u12dc\u12ec\u1295 \u1260\u12a0\u130d\u1263\u1261 \u1218\u1320\u1240\u121d\u1295\u121d \u1270\u121b\u122d\u12a9\u1362",
+        "subtitle_en": "I became a deacon in Grade 10 and learned to manage time wisely beyond class.",
+        "reason": "Milestone ordination to deaconhood and mastery of strict time management.",
+        "seed": 10106
+      },
+      {
+        "shot_id": "shot_07",
+        "duration_sec": 8.0,
+        "shot_type": "close_up",
+        "visual_prompt": "Wollo University Kombolcha campus computer examination room. 18-year-old Hailemichael staring at a computer monitor displaying an unexpected placement exam timeout error dialog. Outside the window, rain streaks across the glass; poignant reflection of sudden heartbreak over medical school hopes.",
+        "motion_prompt": "Slow zoom into his composed yet sorrowful eyes as the screen error light reflects on his face.",
+        "narration_am": "\u12c8\u120e \u12e9\u1292\u1268\u122d\u1232\u1272 \u1235\u1308\u1263 \u121d\u129e\u1274 \u1215\u12ad\u121d\u1293 \u1290\u1260\u122d\u1364 \u130d\u1295 \u1260\u1294\u1275\u12c8\u122d\u12ad \u127d\u130d\u122d \u1348\u1270\u1293\u12cd \u1232\u1260\u120b\u123d \u120d\u1264 \u1270\u1230\u1260\u1228\u1362",
+        "subtitle_en": "At Wollo University I dreamed of Medicine, but a connection glitch crushed it.",
+        "reason": "The defining obstacle: unexpected loss of medical dream due to technical failure.",
+        "seed": 10107
+      },
+      {
+        "shot_id": "shot_08",
+        "duration_sec": 8.0,
+        "shot_type": "medium_shot",
+        "visual_prompt": "Wollo University modern software engineering lab. 21-year-old Hailemichael smiling brightly with confidence, code editor open with Python algorithms on dual screens, collaborating with fellow engineering students under warm ambient studio lighting. Warm amber tones, vibrant intellectual purpose.",
+        "motion_prompt": "Dynamic gentle dolly arc around the workstation showcasing active code development and collaborative energy.",
+        "narration_am": "\u12eb\u1294 \u12a0\u12dd\u129c \u1290\u1260\u122d\u1364 \u12db\u122c \u130d\u1295 \u1260\u1236\u134d\u1275\u12cc\u122d \u12a2\u1295\u1302\u1290\u122a\u1295\u130d \u1226\u1235\u1270\u129b \u12d3\u1218\u1275 \u1270\u121b\u122a\u1290\u1274 \u12eb \u120d\u121d\u12f5 \u1320\u1245\u121e\u129d \u12f0\u1235\u1270\u129b \u1290\u129d\u1362",
+        "subtitle_en": "I grieved then\u2014now thriving in 3rd-year Software Engineering, that discipline fuels me.",
+        "reason": "Transformation and triumph: finding true calling in Software Engineering.",
+        "seed": 10108
+      },
+      {
+        "shot_id": "shot_09",
+        "duration_sec": 8.0,
+        "shot_type": "medium_shot",
+        "visual_prompt": "Hailemichael standing on a scenic overlook above Kombolcha at golden sunset, watching the city lights begin to sparkle as highland breeze flutters his jacket. Serene contemplative expression, warm golden-hour rim light enveloping his silhouette against majestic Ethiopian mountain ridges.",
+        "motion_prompt": "Slow backward tracking shot revealing the vast highland horizon and sunset sky behind him.",
+        "narration_am": "\u1205\u1218\u1219\u121d \u1206\u1290 \u12eb\u1323\u1290\u12cd \u12a5\u12f5\u120d \u1201\u1209 \u1208\u1260\u130e \u1290\u12cd\u1364 \u12a0\u1295\u12f5 \u1260\u122d \u1232\u12d8\u130b \u120c\u120b \u12e8\u1270\u123b\u1208 \u1218\u1295\u1308\u12f5 \u12ed\u12a8\u1348\u1273\u120d\u1362",
+        "subtitle_en": "Every trial and closed door was for good\u2014leading to a better path.",
+        "reason": "Philosophical core realization: 'Hulum Neger Lebego New' - closed doors lead to purpose.",
+        "seed": 10109
+      },
+      {
+        "shot_id": "shot_10",
+        "duration_sec": 6.0,
+        "shot_type": "medium_close_up",
+        "visual_prompt": "Hailemichael looks directly into the lens with a heartfelt, warm, encouraging smile. Behind him, the sun sets over the Ethiopian highlands leaving a rich amber and twilight blue gradient sky. Pure cinematic grace, soft warm rim light, inspiring intimacy.",
+        "motion_prompt": "Slow gentle static hold with subtle natural handheld breathing, holding eye contact until a soft fade.",
+        "narration_am": "\u12a8\u12a5\u1293\u1295\u1270 \u12e8\u121a\u1320\u1260\u1240\u12cd \u12e8\u121d\u1275\u127d\u1209\u1275\u1295 \u1218\u121e\u12a8\u122d \u1265\u127b \u1290\u12cd\u1364 \u1240\u122a\u12cd \u12e8\u1348\u1323\u122a \u1225\u122b \u1290\u12cd\u1362",
+        "subtitle_en": "All asked of you is to try your best; trust the Creator with the rest.",
+        "reason": "Direct emotional and spiritual takeaway to the audience, sealing the film's message.",
+        "seed": 10110
+      }
+    ]
+  }
+}

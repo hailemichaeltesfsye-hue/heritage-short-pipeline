@@ -1,0 +1,136 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "HeritageShortStoryboard",
+  "type": "object",
+  "required": [
+    "title",
+    "language",
+    "total_duration_sec",
+    "style_block",
+    "character_sheet",
+    "music_cues",
+    "shots"
+  ],
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 3
+    },
+    "language": {
+      "type": "string",
+      "enum": ["am", "am-ET", "en"]
+    },
+    "total_duration_sec": {
+      "type": "number",
+      "minimum": 60.0,
+      "maximum": 90.0
+    },
+    "style_block": {
+      "type": "object",
+      "required": ["visual_tone", "lighting", "color_palette", "cinematography"],
+      "properties": {
+        "visual_tone": { "type": "string" },
+        "lighting": { "type": "string" },
+        "color_palette": { "type": "string" },
+        "cinematography": { "type": "string" }
+      }
+    },
+    "character_sheet": {
+      "type": "object",
+      "required": ["protagonist", "progression_stages"],
+      "properties": {
+        "protagonist": { "type": "string" },
+        "progression_stages": {
+          "type": "object",
+          "required": ["boy_primary", "teen_student_deacon", "young_adult_engineer"],
+          "properties": {
+            "boy_primary": { "type": "string" },
+            "teen_student_deacon": { "type": "string" },
+            "young_adult_engineer": { "type": "string" }
+          }
+        }
+      }
+    },
+    "music_cues": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["cue_id", "start_sec", "end_sec", "mood", "instrumentation"],
+        "properties": {
+          "cue_id": { "type": "string" },
+          "start_sec": { "type": "number", "minimum": 0 },
+          "end_sec": { "type": "number", "minimum": 0 },
+          "mood": { "type": "string" },
+          "instrumentation": { "type": "string" }
+        }
+      }
+    },
+    "shots": {
+      "type": "array",
+      "minItems": 10,
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "required": [
+          "shot_id",
+          "duration_sec",
+          "shot_type",
+          "visual_prompt",
+          "motion_prompt",
+          "narration_am",
+          "subtitle_en",
+          "reason",
+          "seed"
+        ],
+        "properties": {
+          "shot_id": {
+            "type": "string",
+            "pattern": "^shot_\\d{2}$"
+          },
+          "duration_sec": {
+            "type": "number",
+            "minimum": 1.0,
+            "maximum": 30.0
+          },
+          "shot_type": {
+            "type": "string",
+            "enum": [
+              "extreme_wide_shot",
+              "wide_shot",
+              "medium_wide_shot",
+              "medium_shot",
+              "medium_close_up",
+              "close_up",
+              "extreme_close_up"
+            ]
+          },
+          "visual_prompt": {
+            "type": "string",
+            "minLength": 15
+          },
+          "motion_prompt": {
+            "type": "string",
+            "minLength": 10
+          },
+          "narration_am": {
+            "type": "string",
+            "minLength": 5
+          },
+          "subtitle_en": {
+            "type": "string",
+            "minLength": 5
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 5
+          },
+          "seed": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
+    }
+  }
+}

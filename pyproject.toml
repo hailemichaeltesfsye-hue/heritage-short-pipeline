@@ -1,0 +1,36 @@
+[project]
+name = "heritage-short-pipeline"
+version = "0.1.0"
+description = "Multi-agent AI filmmaking pipeline for The Heritage Short"
+readme = "README.md"
+authors = [
+    { name = "Hailemichael Tesfaye", email = "hailemichaeltesfsye@gmail.com" }
+]
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115.0",
+    "google-genai>=3.6.1",
+    "httpx>=0.28.1",
+    "jsonschema>=4.26.0",
+    "langgraph>=1.2.24",
+    "mcp>=2.3.0",
+    "pillow>=13.0.0",
+    "pydantic>=2.14.4",
+    "pytest>=9.2.0",
+    "python-dotenv>=1.2.4",
+    "rich>=15.0.0",
+    "typer>=0.29.2",
+    "uvicorn[standard]>=0.30.0",
+]
+
+[project.scripts]
+heritage-pipeline = "pipeline.run:app"
+heritage-mcp = "mcp_server.server:main"
+
+[build-system]
+requires = ["uv_build>=0.13.0,<0.14.0"]
+build-backend = "uv_build"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

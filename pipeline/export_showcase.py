@@ -1,0 +1,90 @@
+"""Export showcase data bundle for standalone static frontend deployment.
+
+Packages storyboard.json, metrics, docs, and media assets into
+frontend/public/showcase-data/ so the frontend functions as a rich standalone
+showcase on Hugging Face Spaces with zero backend requirement!
+"""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+import shutil
+import sys
+
+# Ensure project root is in sys.path
+ROOT_DIR = Path(__file__).resolve().parent.parent
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+
+from api.server import get_docs, get_metrics
+from pipeline.script import validate_storyboard
+
+FRONTEND_PUBLIC_DIR = ROOT_DIR / "frontend" / "public" / "showcase-data"
+OUTPUTS_DIR = ROOT_DIR / "outputs"
+
+
+def export_showcase_bundle() -> Path:
+    """Create complete static showcase bundle."""
+    FRONTEND_PUBLIC_DIR.mkdir(parents=True, exist_ok=True)
+    media_dir = FRONTEND_PUBLIC_DIR / "media"
+    media_dir.mkdir(parents=True, exist_ok=True)
+
+    # 1. Export Storyboard
+    sb_path = ROOT_DIR / "storyboard.json"
+    with open(sb_path, "r", encoding="utf-8") as f:
+        sb_data = json.load(f)
+    is_valid, errors, _ = validate_storyboard(sb_path, ROOT_DIR / "schema" / "storyboard.schema.json")
+    with open(FRONTEND_PUBLIC_DIR / "storyboard.json", "w", encoding="utf-8") as f:
+        json.dump({"is_valid": is_valid, "errors": errors, "storyboard": sb_data}, f, indent=2)
+
+    # 2. Export Metrics
+    metrics_data = get_metrics()
+    with open(FRONTEND_PUBLIC_DIR / "metrics.json", "w", encoding="utf-8") as f:
+        json.dump(metrics_data, f, indent=2)
+
+    # 3. Export Docs
+    docs_data = get_docs()
+    with open(FRONTEND_PUBLIC_DIR / "docs.json", "w", encoding="utf-8") as f:
+        json.dump(docs_data, f, indent=2)
+
+    # 4. Copy Available Media Assets
+    media_files_to_copy = [
+        "final_16x9.mp4",
+        "final_9x16.mp4",
+        "radio_cut.mp4",
+        "subtitles.srt",
+        "audio_master_mixed.wav",
+        "music/score_normalized.wav",
+        "reference/character_sheet.png",
+    ]
+
+    for rel_path in media_files_to_copy:
+        src = OUTPUTS_DIR / rel_path
+        if src.exists():
+            dst = media_dir / rel_path
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(src, dst)
+
+    # Copy keyframes
+    keyframes_src = OUTPUTS_DIR / "keyframes"
+    if keyframes_src.exists():
+        keyframes_dst = media_dir / "keyframes"
+        keyframes_dst.mkdir(parents=True, exist_ok=True)
+        for img in keyframes_src.glob("*.png"):
+            shutil.copyfile(img, keyframes_dst / img.name)
+
+    # Copy narration audio
+    narration_src = OUTPUTS_DIR / "narration"
+    if narration_src.exists():
+        narration_dst = media_dir / "narration"
+        narration_dst.mkdir(parents=True, exist_ok=True)
+        for wav in narration_src.glob("*.wav"):
+            shutil.copyfile(wav, narration_dst / wav.name)
+
+    print(f"Showcase bundle successfully exported to: {FRONTEND_PUBLIC_DIR}")
+    return FRONTEND_PUBLIC_DIR
+
+
+if __name__ == "__main__":
+    export_showcase_bundle()
