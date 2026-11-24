@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from mcp.server.mcpserver import MCPServer
 from pipeline.cache import invalidate_shot
@@ -90,13 +90,13 @@ def regenerate_shot(shot_id: str, storyboard_path: str = "storyboard.json", dry_
 
 
 @server.tool()
-def get_pipeline_metrics(log_path: str = "runs.jsonl") -> Dict[str, Any]:
+def get_pipeline_metrics(log_path: Optional[str] = None) -> Dict[str, Any]:
     """Retrieve summarized latency, cost, and cache hit metrics from runs.jsonl.
 
     Args:
-        log_path: Path to the structured runs.jsonl log file.
+        log_path: Optional path to the structured runs.jsonl log file.
     """
-    return read_pipeline_metrics(Path(log_path))
+    return read_pipeline_metrics(Path(log_path) if log_path else None)
 
 
 def main():

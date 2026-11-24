@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 import time
-from typing import Any, Dict, Optional
+from typing import Optional
 
 from pipeline.ffmpeg_utils import get_audio_duration, run_ffmpeg
 from pipeline.logger import log_run
@@ -12,22 +12,44 @@ from pipeline.logger import log_run
 OUTPUTS_MUSIC_DIR = Path("outputs/music")
 
 
+def _find_real_score(music_dir: Path, input_score_path: Optional[Path]) -> Optional[Path]:
+    """Prioritize real outputs/music/score.wav or ACE-Step candidate outputs."""
+    if input_score_path is not None and input_score_path.exists() and input_score_path.stat().st_size > 0:
+        return input_score_path
+
+    candidates = [
+        music_dir / "score.wav",
+        music_dir / "score_candidate_1.wav",
+        *sorted(music_dir.glob("acestep*.wav")),
+    ]
+    for cand in candidates:
+        if cand.exists() and cand.stat().st_size > 0:
+            return cand
+    return None
+
+
 def prepare_score(
     total_duration_sec: float,
     input_score_path: Optional[Path] = None,
-    output_score_path: Path = OUTPUTS_MUSIC_DIR / "score_normalized.wav",
+    output_score_path: Optional[Path] = None,
     trace_id: Optional[str] = None,
 ) -> Path:
-    """Inspect score, normalize loudness (-16 LUFS / -1.5 dB TP), and apply gentle in/out fades."""
-    output_score_path.parent.mkdir(parents=True, exist_ok=True)
+    """Inspect real score (or temporary ambient fallback), normalize (-16 LUFS), and fade in/out."""
+    resolved_music_dir = OUTPUTS_MUSIC_DIR
+    resolved_music_dir.mkdir(parents=True, exist_ok=True)
+    resolved_output = Path(output_score_path) if output_score_path is not None else (resolved_music_dir / "score_normalized.wav")
+    resolved_output.parent.mkdir(parents=True, exist_ok=True)
+
     start_time = time.time()
+    real_source = _find_real_score(resolved_music_dir, input_score_path)
+    used_fallback = real_source is None
+    source: Path
 
-    source = input_score_path or (OUTPUTS_MUSIC_DIR / "score.wav")
-
-    # If raw score does not exist, synthesize warm acoustic Washint harmonic bed
-    if not source.exists() or source.stat().st_size == 0:
-        synth_source = OUTPUTS_MUSIC_DIR / "score_synth.wav"
-        # Generate 220Hz + 440Hz warm acoustic Washint harmonic drone
+    if real_source is not None:
+        source = real_source
+    else:
+        # Temporary ambient harmonic bed before Kaggle ACE-Step score is generated
+        synth_source = resolved_music_dir / "score_synth.wav"
         fade_out_start = max(total_duration_sec - 3.0, 1.0)
         cmd_synth = [
             "-f", "lavfi",
@@ -42,34 +64,40 @@ def prepare_score(
             "-map", "[aout]",
             "-y", str(synth_source),
         ]
-        run_ffmpeg(cmd_synth)
+        ret_s, _, err_s = run_ffmpeg(cmd_synth)
+        if ret_s != 0 or not synth_source.exists():
+            raise RuntimeError(f"Failed generating ambient fallback score: {err_s}")
         source = synth_source
 
     actual_dur = get_audio_duration(source)
     fade_out_start = max(total_duration_sec - 3.0, 1.0)
 
-    # Normalize loudness with loudnorm filter and trim/loop cleanly to total_duration_sec
-    cmd_norm = [
-        "-i", str(source),
+    input_args = ["-stream_loop", "-1", "-i", str(source)] if actual_dur > 0 and actual_dur < total_duration_sec else ["-i", str(source)]
+    cmd_norm = input_args + [
         "-t", str(total_duration_sec),
         "-af", (
             f"loudnorm=I=-16:TP=-1.5:LRA=11,"
             f"afade=t=in:ss=0:d=2.0,afade=t=out:st={fade_out_start}:d=2.5"
         ),
-        "-y", str(output_score_path),
+        "-ar", "24000",
+        "-ac", "1",
+        "-y", str(resolved_output),
     ]
-    run_ffmpeg(cmd_norm)
+    ret_n, _, err_n = run_ffmpeg(cmd_norm)
+    if ret_n != 0 or not resolved_output.exists():
+        raise RuntimeError(f"Failed normalizing background score {source}: {err_n}")
 
     latency_ms = (time.time() - start_time) * 1000
     log_run(
         agent="AudioVoiceAgent",
         stage="music_score",
-        provider="ffmpeg",
-        model="acestep-or-harmonic",
-        parameters={"total_duration_sec": total_duration_sec},
+        provider="ffmpeg" if used_fallback else "kaggle_acestep",
+        model="ffmpeg-ambient-fallback" if used_fallback else "ace-step-1.5",
+        parameters={"total_duration_sec": total_duration_sec, "source": str(source)},
         latency_ms=latency_ms,
-        status="success",
+        status="fallback" if used_fallback else "success",
+        error="outputs/music/score.wav missing; using temporary ambient harmonic fallback" if used_fallback else None,
         trace_id=trace_id,
     )
 
-    return output_score_path
+    return resolved_output

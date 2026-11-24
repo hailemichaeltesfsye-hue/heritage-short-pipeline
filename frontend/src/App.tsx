@@ -4,13 +4,20 @@ import { CinemaScreening } from './components/CinemaScreening';
 import { StoryboardLab } from './components/StoryboardLab';
 import { Observability } from './components/Observability';
 import { EngineeringJournals } from './components/EngineeringJournals';
-import { checkBackendConnection, fetchDocs, fetchMetrics, fetchStoryboard } from './api';
-import { MetricsData, StoryboardData, ViewMode } from './types';
+import {
+  checkBackendConnection,
+  fetchDocs,
+  fetchMetrics,
+  fetchOutputsManifest,
+  fetchStoryboard,
+} from './api';
+import { MetricsData, OutputsManifest, StoryboardData, ViewMode } from './types';
 
 export const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewMode>('screening');
   const [isLive, setIsLive] = useState<boolean>(false);
   const [storyboard, setStoryboard] = useState<StoryboardData | null>(null);
+  const [outputs, setOutputs] = useState<OutputsManifest>({ files: {}, keyframes: [], narration: [] });
   const [metrics, setMetrics] = useState<MetricsData | null>(null);
   const [docs, setDocs] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState<boolean>(true);
@@ -20,13 +27,15 @@ export const App: React.FC = () => {
       const live = await checkBackendConnection();
       setIsLive(live);
 
-      const [sbRes, metRes, docRes] = await Promise.all([
+      const [sbRes, outRes, metRes, docRes] = await Promise.all([
         fetchStoryboard(),
+        fetchOutputsManifest(),
         fetchMetrics(),
         fetchDocs(),
       ]);
 
       setStoryboard(sbRes.storyboard);
+      setOutputs(outRes);
       setMetrics(metRes);
       setDocs(docRes);
     } catch (e) {
@@ -41,22 +50,32 @@ export const App: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-studio-bg flex flex-col font-sans">
-      <Navbar currentView={currentView} onSelectView={setCurrentView} isLive={isLive} />
+    <div className="min-h-screen bg-[#09090b] text-zinc-100 flex flex-col font-sans">
+      <Navbar currentView={currentView} onSelectView={setCurrentView} />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-8">
         {loading ? (
-          <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
-            <div className="w-8 h-8 border-2 border-studio-amber border-t-transparent rounded-full animate-spin" />
-            <div className="text-xs text-neutral-400 font-cinematic uppercase tracking-widest">
-              Initializing Studio Showcase...
-            </div>
+          <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-3">
+            <div className="w-6 h-6 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
+            <div className="text-xs text-zinc-500 font-mono">Loading Studio...</div>
           </div>
         ) : storyboard ? (
           <>
-            {currentView === 'screening' && <CinemaScreening storyboard={storyboard} />}
+            {currentView === 'screening' && (
+              <CinemaScreening
+                storyboard={storyboard}
+                outputs={outputs}
+                isLive={isLive}
+                onRefresh={loadData}
+              />
+            )}
             {currentView === 'storyboard' && (
-              <StoryboardLab storyboard={storyboard} isLive={isLive} onRefresh={loadData} />
+              <StoryboardLab
+                storyboard={storyboard}
+                outputs={outputs}
+                isLive={isLive}
+                onRefresh={loadData}
+              />
             )}
             {currentView === 'observability' && metrics && (
               <Observability metrics={metrics} isLive={isLive} onRefresh={loadData} />
@@ -64,16 +83,18 @@ export const App: React.FC = () => {
             {currentView === 'journals' && <EngineeringJournals docs={docs} />}
           </>
         ) : (
-          <div className="p-8 text-center text-sm text-neutral-400">
-            Failed to load storyboard data. Ensure outputs are exported.
+          <div className="p-8 text-center text-sm text-zinc-400">
+            Unable to load storyboard contract. Run <code className="font-mono">make export-showcase</code> or start FastAPI.
           </div>
         )}
       </main>
 
-      <footer className="border-t border-studio-border/60 py-6 text-center text-xs text-neutral-500 font-sans">
-        <p>AI-Content Generation: The Heritage Short • "Hulum Neger Lebego New (ሁሉም ነገር ለበጎ ነው)"</p>
-        <p className="mt-1 text-[11px] text-neutral-600">
-          Created by Hailemichael Tesfaye • Multi-Agent LangGraph Core • Cloudflare Workers AI FLUX • Kaggle Wan 2.2 • FFmpeg
+      <footer className="border-t border-white/10 py-6 text-center text-xs text-zinc-500">
+        <p className="font-ethiopic">
+          AI-Content Generation: The Heritage Short · “Hulum Neger Lebego New (ሁሉም ነገር ለበጎ ነው)”
+        </p>
+        <p className="mt-1 text-[11px] text-zinc-600">
+          Hailemichael Tesfaye · LangGraph Multi-Agent Core · Gemini 3.8 / Edge-TTS · Cloudflare FLUX · Kaggle Wan 2.2 · FFmpeg
         </p>
       </footer>
     </div>

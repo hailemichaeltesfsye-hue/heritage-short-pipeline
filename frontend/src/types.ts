@@ -37,6 +37,12 @@ export interface StoryboardData {
   shots: Shot[];
 }
 
+export interface OutputsManifest {
+  files: Record<string, boolean>;
+  keyframes: string[];
+  narration: string[];
+}
+
 export interface MetricsSummary {
   total_runs: number;
   total_latency_ms: number;
@@ -52,16 +58,16 @@ export interface RunLogEntry {
   timestamp_utc: string;
   agent: string;
   stage: string;
-  shot_id?: string;
+  shot_id?: string | null;
   provider: string;
   model: string;
-  parameters?: Record<string, any>;
-  seed?: number;
+  parameters?: Record<string, unknown>;
+  seed?: number | null;
   latency_ms: number;
   estimated_cost_usd: number;
   cache_hit: boolean;
   status: string;
-  error?: string;
+  error?: string | null;
 }
 
 export interface MetricsData {

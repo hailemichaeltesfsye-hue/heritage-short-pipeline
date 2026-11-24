@@ -28,9 +28,10 @@ def log_run(
     status: str = "success",
     error: Optional[str] = None,
     trace_id: Optional[str] = None,
-    log_path: Path = RUNS_LOG_PATH,
+    log_path: Optional[Path] = None,
 ) -> Dict[str, Any]:
     """Append a structured log record to runs.jsonl."""
+    resolved_path = Path(log_path) if log_path is not None else RUNS_LOG_PATH
     record = {
         "trace_id": trace_id or str(uuid.uuid4()),
         "timestamp_utc": datetime.now(timezone.utc).isoformat(),
@@ -47,15 +48,16 @@ def log_run(
         "status": status,
         "error": error,
     }
-    log_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(log_path, "a", encoding="utf-8") as f:
+    resolved_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(resolved_path, "a", encoding="utf-8") as f:
         f.write(json.dumps(record, ensure_ascii=False) + "\n")
     return record
 
 
-def get_pipeline_metrics(log_path: Path = RUNS_LOG_PATH) -> Dict[str, Any]:
+def get_pipeline_metrics(log_path: Optional[Path] = None) -> Dict[str, Any]:
     """Aggregate metrics from runs.jsonl."""
-    if not log_path.exists():
+    resolved_path = Path(log_path) if log_path is not None else RUNS_LOG_PATH
+    if not resolved_path.exists():
         return {
             "total_runs": 0,
             "total_latency_ms": 0.0,
@@ -73,7 +75,7 @@ def get_pipeline_metrics(log_path: Path = RUNS_LOG_PATH) -> Dict[str, Any]:
     cache_misses = 0
     failures = 0
 
-    with open(log_path, "r", encoding="utf-8") as f:
+    with open(resolved_path, "r", encoding="utf-8") as f:
         for line in f:
             line = line.strip()
             if not line:

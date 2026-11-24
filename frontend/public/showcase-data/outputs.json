@@ -1,0 +1,13 @@
+{
+  "files": {
+    "final_16x9.mp4": false,
+    "final_9x16.mp4": false,
+    "radio_cut.mp4": false,
+    "subtitles.srt": false,
+    "audio_master_mixed.wav": false,
+    "music/score_normalized.wav": false,
+    "reference/character_sheet.png": false
+  },
+  "keyframes": [],
+  "narration": []
+}

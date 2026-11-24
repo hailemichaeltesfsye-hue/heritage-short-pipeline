@@ -11,7 +11,7 @@ from rich.table import Table
 
 from agents.graph import create_pipeline_graph
 from pipeline.assemble import assemble_full_dual_aspect_pipeline
-from pipeline.keyframes import generate_all_keyframes
+from pipeline.keyframes import generate_all_keyframes, generate_character_sheet, generate_shot_keyframe
 from pipeline.logger import get_pipeline_metrics
 from pipeline.music import prepare_score
 from pipeline.narration import generate_shot_narration
@@ -24,7 +24,7 @@ console = Console()
 
 @app.command()
 def run(
-    stage: str = typer.Option("all", "--stage", help="Stage to run: all, keyframes, shots, music, assemble, narration"),
+    stage: str = typer.Option("all", "--stage", help="Stage to run: all, keyframes, narration, shots, music, assemble"),
     storyboard: Path = typer.Option(Path("storyboard.json"), "--storyboard", "-s", help="Path to storyboard JSON"),
     dry_run: bool = typer.Option(False, "--dry-run", help="Run in deterministic dry-run mode"),
     hitl: bool = typer.Option(False, "--hitl", help="Enable Human-In-The-Loop approval checkpoints"),
@@ -32,7 +32,7 @@ def run(
     force: bool = typer.Option(False, "--force", "-f", help="Bypass cache and force regeneration"),
 ):
     """Execute the multi-agent pipeline to generate keyframes, audio, shots, and final dual-aspect cut."""
-    console.print(f"[bold cyan]AI Filmmaking Pipeline: The Heritage Short[/bold cyan]")
+    console.print("[bold cyan]AI Filmmaking Pipeline: The Heritage Short[/bold cyan]")
     console.print(f"Stage: [bold yellow]{stage}[/bold yellow] | Storyboard: [green]{storyboard}[/green] | Dry-run: {dry_run}")
 
     if not storyboard.exists():
@@ -83,17 +83,52 @@ def run(
             console.print(f"9:16 Vertical: [bold yellow]{result['final_9x16_path']}[/bold yellow]")
         return
 
-    # Granular individual stages
     if stage == "keyframes":
-        generate_all_keyframes(storyboard_data, dry_run=dry_run, force=force)
-        console.print("[bold green]Keyframes stage complete: outputs/keyframes/[/bold green]")
+        if shot:
+            generate_character_sheet(storyboard_data, dry_run=dry_run, force=False)
+            target = next((s for s in storyboard_data.get("shots", []) if s["shot_id"] == shot), None)
+            if not target:
+                console.print(f"[red]Shot {shot} not found[/red]")
+                raise typer.Exit(code=1)
+            ok, path, _ = generate_shot_keyframe(
+                target, storyboard_data.get("style_block", {}), dry_run=dry_run, force=force
+            )
+            if not ok:
+                console.print(f"[red]Keyframe generation failed for {shot}[/red]")
+                raise typer.Exit(code=1)
+            console.print(f"[bold green]Keyframe generated: {path}[/bold green]")
+        else:
+            generate_all_keyframes(storyboard_data, dry_run=dry_run, force=force)
+            console.print("[bold green]Keyframes stage complete: outputs/keyframes/[/bold green]")
 
     elif stage == "narration":
+        failed = []
         for s in storyboard_data.get("shots", []):
             if shot and s["shot_id"] != shot:
                 continue
-            generate_shot_narration(s, dry_run=dry_run)
+            ok, _, model_used, _ = generate_shot_narration(s, dry_run=dry_run)
+            if not ok:
+                failed.append(s["shot_id"])
+            else:
+                console.print(f" - {s['shot_id']}: [green]{model_used}[/green]")
+        if failed:
+            console.print(f"[red]Narration generation failed for: {', '.join(failed)}[/red]")
+            raise typer.Exit(code=1)
         console.print("[bold green]Narration stage complete: outputs/narration/[/bold green]")
+
+    elif stage == "shots":
+        style_block = storyboard_data.get("style_block", {})
+        for idx, s in enumerate(storyboard_data.get("shots", []), 1):
+            if shot and s["shot_id"] != shot:
+                continue
+            kf_path = Path("outputs/keyframes") / f"{s['shot_id']}.png"
+            ok, out_vid, provider = process_shot_motion(
+                s, keyframe_path=kf_path, style_block=style_block, shot_index=idx, force=force
+            )
+            if not ok:
+                console.print(f"[red]Motion shot failed for {s['shot_id']}[/red]")
+                raise typer.Exit(code=1)
+            console.print(f" - {s['shot_id']}: [green]{out_vid}[/green] ({provider})")
 
     elif stage == "music":
         prepare_score(float(storyboard_data.get("total_duration_sec", 74.0)))

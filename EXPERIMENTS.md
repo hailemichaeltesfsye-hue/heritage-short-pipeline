@@ -1,12 +1,11 @@
 # Experiments & Benchmarking Log
 
-## 1. Voice Synthesis Model Discovery
-- **Objective**: Identify the most natural Amharic-capable speech synthesis model available via `google-genai`.
+## 1. Voice Synthesis Model Discovery & Neural Fallback
+- **Objective**: Identify a reliable Amharic speech synthesis path for documentary narration.
 - **Candidates Evaluated**:
-  - `gemini-2.5-flash`: Preferred target for low latency and high phonetic fidelity.
-  - `gemini-2.0-flash`: Reliable generalist fallback with multi-language synthesis.
-  - `gemini-1.5-flash`: Established baseline.
-- **Results**: Dynamic model discovery automatically queries `client.models.list()` to select the latest available Flash tier model at runtime.
+  - `models/gemini-3.8-flash` (`response_modalities=["AUDIO"]`): Primary Gemini audio generation target with raw `audio/L16` -> `24000 Hz` mono WAV conversion and `503` backoff.
+  - `models/gemini-2.5-flash`: **Retired** — removed after live 404/unsupported native `AUDIO` failures.
+  - `edge-tts` (`am-ET-AmehaNeural` / `am-ET-MekdesNeural`): High-clarity native Amharic neural TTS fallback transcoded via FFmpeg to `24000 Hz` mono PCM WAV (`status="fallback"` logged when Gemini fails).
 
 ## 2. Single-Shot Invalidation Benchmark
 - **Test**: Modify Shot 4 (`shot_04`) narration in `storyboard.json`.

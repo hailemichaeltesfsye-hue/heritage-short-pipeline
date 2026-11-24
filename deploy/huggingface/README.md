@@ -8,7 +8,7 @@ pinned: false
 ---
 
 # The Heritage Short — AI Filmmaking Pipeline Showcase
-### "Hulum L'Bego New (Everything for Good)"
+### "Hulum Neger Lebego New (ሁሉም ነገር ለበጎ ነው)"
 
 Autobiographical Amharic short film authored by Hailemichael Tesfaye, produced via a production-grade multi-agent AI filmmaking orchestrator.
 

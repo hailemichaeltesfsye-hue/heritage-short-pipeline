@@ -1,72 +1,55 @@
 import React from 'react';
-import { Film, Sliders, Activity, BookOpen, Server, Globe } from 'lucide-react';
+import { Film } from 'lucide-react';
 import { ViewMode } from '../types';
 
 interface NavbarProps {
   currentView: ViewMode;
   onSelectView: (view: ViewMode) => void;
-  isLive: boolean;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ currentView, onSelectView, isLive }) => {
-  const navItems: { id: ViewMode; label: string; icon: React.ReactNode }[] = [
-    { id: 'screening', label: 'Cinema Screening', icon: <Film className="w-4 h-4" /> },
-    { id: 'storyboard', label: 'Storyboard & Shot Lab', icon: <Sliders className="w-4 h-4" /> },
-    { id: 'observability', label: 'Observability & Telemetry', icon: <Activity className="w-4 h-4" /> },
-    { id: 'journals', label: 'Engineering Journals', icon: <BookOpen className="w-4 h-4" /> },
+export const Navbar: React.FC<NavbarProps> = ({ currentView, onSelectView }) => {
+  const navItems: { id: ViewMode; label: string }[] = [
+    { id: 'screening', label: 'Screening Room' },
+    { id: 'storyboard', label: 'Storyboard Lab' },
+    { id: 'observability', label: 'Telemetry' },
+    { id: 'journals', label: 'Journals' },
   ];
 
   return (
-    <header className="border-b border-studio-border bg-studio-card/80 backdrop-blur sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <div className="flex items-center space-x-3 cursor-pointer" onClick={() => onSelectView('screening')}>
-          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-studio-gold to-studio-amber flex items-center justify-center shadow-lg shadow-amber-900/20">
-            <Film className="w-5 h-5 text-black" />
-          </div>
-          <div>
-            <div className="font-cinematic tracking-wider text-base font-bold text-white flex items-center gap-2">
-              HULUM NEGER LEBEGO NEW
-              <span className="text-[10px] uppercase font-sans font-semibold tracking-wider px-2 py-0.5 rounded bg-studio-amber/20 text-studio-gold border border-studio-amber/40">
-                Heritage Short
-              </span>
-            </div>
-            <div className="text-xs text-neutral-400 font-sans">Multi-Agent AI Filmmaking Pipeline</div>
-          </div>
-        </div>
+    <header className="h-16 border-b border-white/10 bg-[#09090b]/90 backdrop-blur-md sticky top-0 z-40">
+      <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between gap-6">
+        <button
+          type="button"
+          onClick={() => onSelectView('screening')}
+          className="flex items-center gap-3 text-left shrink-0 focus:outline-none group"
+        >
+          <span className="w-7 h-7 rounded-md border border-white/15 bg-zinc-900 flex items-center justify-center text-amber-500 group-hover:border-amber-500/50 transition-colors">
+            <Film className="w-3.5 h-3.5" />
+          </span>
+          <span className="text-sm font-semibold tracking-tight text-zinc-100 whitespace-nowrap">
+            Hulum Neger Lebego New
+          </span>
+        </button>
 
-        <nav className="flex items-center space-x-1 sm:space-x-2">
+        <nav className="flex items-center gap-6 sm:gap-8 h-full overflow-x-auto">
           {navItems.map((item) => {
             const active = currentView === item.id;
             return (
               <button
                 key={item.id}
+                type="button"
                 onClick={() => onSelectView(item.id)}
-                className={`flex items-center space-x-2 px-3 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors ${
+                className={`h-full flex items-center text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
                   active
-                    ? 'bg-studio-amber/20 text-studio-gold border border-studio-amber/40 shadow-sm'
-                    : 'text-neutral-300 hover:text-white hover:bg-studio-surface'
+                    ? 'border-amber-500 text-zinc-100'
+                    : 'border-transparent text-zinc-400 hover:text-zinc-200'
                 }`}
               >
-                {item.icon}
-                <span className="hidden md:inline">{item.label}</span>
+                {item.label}
               </button>
             );
           })}
         </nav>
-
-        <div className="flex items-center space-x-2">
-          <div
-            className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${
-              isLive
-                ? 'bg-emerald-950/60 text-emerald-300 border-emerald-700/50'
-                : 'bg-neutral-800 text-neutral-300 border-neutral-700'
-            }`}
-            title={isLive ? 'Connected to local FastAPI backend' : 'Serving static showcase bundle'}
-          >
-            {isLive ? <Server className="w-3.5 h-3.5 text-emerald-400" /> : <Globe className="w-3.5 h-3.5 text-amber-400" />}
-            <span className="hidden sm:inline">{isLive ? 'FastAPI Live' : 'Showcase Mode'}</span>
-          </div>
-        </div>
       </div>
     </header>
   );

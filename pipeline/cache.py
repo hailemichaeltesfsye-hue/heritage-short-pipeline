@@ -31,21 +31,23 @@ def compute_shot_hash(shot_data: Dict[str, Any], style_block: Optional[Dict[str,
     return hashlib.sha256(encoded).hexdigest()
 
 
-def load_manifest(manifest_path: Path = MANIFEST_PATH) -> Dict[str, Any]:
+def load_manifest(manifest_path: Optional[Path] = None) -> Dict[str, Any]:
     """Load the cache manifest from disk."""
-    if not manifest_path.exists():
+    resolved = Path(manifest_path) if manifest_path is not None else MANIFEST_PATH
+    if not resolved.exists():
         return {"version": "1.0", "shots": {}}
     try:
-        with open(manifest_path, "r", encoding="utf-8") as f:
+        with open(resolved, "r", encoding="utf-8") as f:
             return json.load(f)
     except Exception:
         return {"version": "1.0", "shots": {}}
 
 
-def save_manifest(manifest: Dict[str, Any], manifest_path: Path = MANIFEST_PATH) -> None:
+def save_manifest(manifest: Dict[str, Any], manifest_path: Optional[Path] = None) -> None:
     """Save the cache manifest to disk."""
-    manifest_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(manifest_path, "w", encoding="utf-8") as f:
+    resolved = Path(manifest_path) if manifest_path is not None else MANIFEST_PATH
+    resolved.parent.mkdir(parents=True, exist_ok=True)
+    with open(resolved, "w", encoding="utf-8") as f:
         json.dump(manifest, f, indent=2, ensure_ascii=False)
 
 
@@ -53,7 +55,7 @@ def is_shot_cached(
     shot_id: str,
     shot_hash: str,
     required_artifacts: Optional[list[Path]] = None,
-    manifest_path: Path = MANIFEST_PATH,
+    manifest_path: Optional[Path] = None,
 ) -> bool:
     """Check if a shot is cached and all required artifacts exist on disk."""
     manifest = load_manifest(manifest_path)
@@ -73,19 +75,26 @@ def update_shot_cache(
     shot_id: str,
     shot_hash: str,
     artifacts: Optional[Dict[str, str]] = None,
-    manifest_path: Path = MANIFEST_PATH,
+    manifest_path: Optional[Path] = None,
 ) -> None:
-    """Update cache manifest entry for a single shot."""
+    """Update cache manifest entry for a single shot, merging artifacts when hash matches."""
     manifest = load_manifest(manifest_path)
     shots = manifest.setdefault("shots", {})
+    existing = shots.get(shot_id, {})
+    merged_artifacts: Dict[str, str] = {}
+    if existing.get("sha256") == shot_hash and isinstance(existing.get("artifacts"), dict):
+        merged_artifacts.update(existing["artifacts"])
+    if artifacts:
+        merged_artifacts.update(artifacts)
+
     shots[shot_id] = {
         "sha256": shot_hash,
-        "artifacts": artifacts or {},
+        "artifacts": merged_artifacts,
     }
     save_manifest(manifest, manifest_path)
 
 
-def invalidate_shot(shot_id: str, manifest_path: Path = MANIFEST_PATH) -> bool:
+def invalidate_shot(shot_id: str, manifest_path: Optional[Path] = None) -> bool:
     """Invalidate a single shot from the cache."""
     manifest = load_manifest(manifest_path)
     shots = manifest.get("shots", {})

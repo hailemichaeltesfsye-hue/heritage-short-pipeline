@@ -8,21 +8,22 @@ export default {
   theme: {
     extend: {
       colors: {
-        studio: {
-          bg: '#0a0b0e',
-          card: '#12141a',
-          surface: '#181b22',
-          border: '#242833',
-          amber: '#d97706',
-          gold: '#f59e0b',
-          accent: '#b45309',
-        }
+        obsidian: {
+          DEFAULT: '#09090b',
+          surface: '#111114',
+          elevated: '#18181b',
+        },
+        amberaccent: {
+          DEFAULT: '#d97706',
+          soft: '#f59e0b',
+        },
       },
       fontFamily: {
-        cinematic: ['Cinzel', 'serif'],
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-      }
+        sans: ['"Plus Jakarta Sans"', '"Noto Sans Ethiopic"', 'system-ui', 'sans-serif'],
+        ethiopic: ['"Noto Sans Ethiopic"', '"Plus Jakarta Sans"', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'monospace'],
+      },
     },
   },
   plugins: [],
-}
+};

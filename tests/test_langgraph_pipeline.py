@@ -1,7 +1,6 @@
 """Tests for the LangGraph multi-agent pipeline orchestrator."""
 
 from pathlib import Path
-import pytest
 from agents.governance import verify_output_media
 from agents.graph import create_pipeline_graph
 from pipeline.ffmpeg_utils import get_audio_duration
@@ -42,7 +41,6 @@ def test_langgraph_pipeline_dry_run():
     assert result["is_valid_schema"] is True, f"Schema validation failed: {result.get('errors')}"
     assert len(result["errors"]) == 0, f"Pipeline errors: {result.get('errors')}"
 
-    # Verify all 10 audio files were generated
     assert len(result["audio_files"]) == 10
     for shot_id, audio_path in result["audio_files"].items():
         p = Path(audio_path)
@@ -51,11 +49,9 @@ def test_langgraph_pipeline_dry_run():
         dur = get_audio_duration(p)
         assert dur > 0.0, f"Duration for {shot_id} must be non-zero"
 
-    # Verify keyframes were generated
     keyframes = result.get("keyframes", {})
     assert len(keyframes) == 10
 
-    # Verify final dual-aspect exports
     f16 = result.get("final_16x9_path")
     assert f16 is not None
     p16 = Path(f16)
@@ -68,9 +64,15 @@ def test_langgraph_pipeline_dry_run():
     assert p9.exists()
     assert p9.stat().st_size > 0
 
-    # Verify media streams & duration bounds (60-90s)
     media_ok, media_errors = verify_output_media(p16)
-    assert media_ok, f"Media verification failed: {media_errors}"
+    assert media_ok, f"16:9 media verification failed: {media_errors}"
+    media9_ok, media9_errors = verify_output_media(p9)
+    assert media9_ok, f"9:16 media verification failed: {media9_errors}"
+
+    # Ensure root runs.jsonl was never polluted during isolated pytest
+    root_runs = Path("runs.jsonl")
+    if root_runs.exists():
+        assert root_runs.read_text(encoding="utf-8-sig").strip() == ""
 
 
 def test_mcp_tools():
@@ -84,5 +86,9 @@ def test_mcp_tools():
     assert regen_res["success"] is True
     assert regen_res["shot_id"] == "shot_01"
 
-    metrics_res = get_pipeline_metrics("runs.jsonl")
+    metrics_res = get_pipeline_metrics()
+    # Structure check only: MCP server reads root runs.jsonl which is empty under test isolation
     assert "total_runs" in metrics_res
+    assert "total_latency_ms" in metrics_res
+    assert "cache_hit_ratio" in metrics_res
+    assert metrics_res["total_runs"] >= 0

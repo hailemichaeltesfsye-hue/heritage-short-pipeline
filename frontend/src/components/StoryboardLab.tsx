@@ -1,15 +1,21 @@
 import React, { useState } from 'react';
-import { RefreshCw, Edit3, Check, AlertCircle, Sparkles, Clock, Hash, Camera } from 'lucide-react';
-import { Shot, StoryboardData } from '../types';
+import { AlertCircle, Check, Info, RefreshCw } from 'lucide-react';
+import { OutputsManifest, Shot, StoryboardData } from '../types';
 import { getMediaUrl, triggerPipelineRun, updateShot } from '../api';
 
 interface StoryboardLabProps {
   storyboard: StoryboardData;
+  outputs: OutputsManifest;
   isLive: boolean;
-  onRefresh: () => void;
+  onRefresh: () => Promise<void>;
 }
 
-export const StoryboardLab: React.FC<StoryboardLabProps> = ({ storyboard, isLive, onRefresh }) => {
+export const StoryboardLab: React.FC<StoryboardLabProps> = ({
+  storyboard,
+  outputs,
+  isLive,
+  onRefresh,
+}) => {
   const [selectedShot, setSelectedShot] = useState<Shot>(storyboard.shots[0]);
   const [editForm, setEditForm] = useState<Partial<Shot>>({});
   const [isUpdating, setIsUpdating] = useState<boolean>(false);
@@ -31,7 +37,7 @@ export const StoryboardLab: React.FC<StoryboardLabProps> = ({ storyboard, isLive
     if (!isLive) {
       setFeedback({
         type: 'error',
-        message: 'Static Showcase Mode: Connect local FastAPI on port 8000 to trigger live regeneration.',
+        message: 'Static showcase mode: connect local FastAPI backend on port 8000 to regenerate shots.',
       });
       return;
     }
@@ -39,200 +45,218 @@ export const StoryboardLab: React.FC<StoryboardLabProps> = ({ storyboard, isLive
     setIsUpdating(true);
     setFeedback(null);
     try {
-      // 1. Update shot in storyboard.json safely
       await updateShot(selectedShot.shot_id, editForm);
-
-      // 2. Trigger targeted single-shot pipeline execution
-      await triggerPipelineRun('keyframes', selectedShot.shot_id);
-      await triggerPipelineRun('narration', selectedShot.shot_id);
+      await triggerPipelineRun('keyframes', selectedShot.shot_id, false);
+      await triggerPipelineRun('narration', selectedShot.shot_id, false);
 
       setFeedback({
         type: 'success',
-        message: `Shot ${selectedShot.shot_id} updated and regenerated successfully!`,
+        message: `${selectedShot.shot_id} saved and regenerated cleanly.`,
       });
-      onRefresh();
-    } catch (err: any) {
+      await onRefresh();
+    } catch (err: unknown) {
       setFeedback({
         type: 'error',
-        message: err.message || 'Failed to update shot',
+        message: err instanceof Error ? err.message : 'Failed to update shot',
       });
     } finally {
       setIsUpdating(false);
     }
   };
 
+  const subtitleDraft = editForm.subtitle_en ?? selectedShot.subtitle_en;
+
   return (
-    <div className="space-y-8 animate-fade-in">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-studio-border pb-4">
+    <div className="space-y-8">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-white/10 pb-5">
         <div>
-          <h2 className="text-xl font-cinematic font-bold text-white tracking-wide">Storyboard Contract & Shot Lab</h2>
-          <p className="text-sm text-neutral-400 mt-0.5">
-            Strict schema contract validation ({storyboard.shots.length} shots, {storyboard.total_duration_sec}s total runtime)
+          <h1 className="text-2xl font-semibold tracking-tight text-zinc-100">Storyboard Lab</h1>
+          <p className="text-sm text-zinc-400 mt-1">
+            Schema-validated 10-shot contract · {storyboard.total_duration_sec}s target runtime · Single-shot SHA-256 cache isolation
           </p>
         </div>
-
-        {!isLive && (
-          <div className="px-3 py-1 rounded bg-amber-950/40 text-amber-300 border border-amber-800/60 text-xs flex items-center gap-1.5">
-            <AlertCircle className="w-4 h-4 text-amber-400" />
-            <span>Read-Only Showcase Mode: Editing disabled on static deployment</span>
-          </div>
-        )}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Shots Gallery Grid (Left 7 Cols) */}
-        <div className="lg:col-span-7 space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {storyboard.shots.map((shot, idx) => {
-              const isSelected = shot.shot_id === selectedShot.shot_id;
-              const keyframeUrl = getMediaUrl(`keyframes/${shot.shot_id}.png`);
+      {!isLive && (
+        <div className="px-4 py-3 rounded-lg bg-[#111114] border border-white/10 text-xs text-zinc-400 flex items-center gap-2.5">
+          <Info className="w-4 h-4 text-zinc-400 shrink-0" />
+          <span>
+            Static read-only showcase mode. Start local FastAPI (<code className="font-mono text-zinc-300">make serve-api</code>) to edit prompts and regenerate single shots live.
+          </span>
+        </div>
+      )}
 
-              return (
-                <div
-                  key={shot.shot_id}
-                  onClick={() => handleSelectShot(shot)}
-                  className={`p-3 rounded-xl bg-studio-card border cursor-pointer transition-all hover:border-studio-amber ${
-                    isSelected
-                      ? 'border-studio-amber ring-2 ring-studio-amber/40 shadow-lg bg-studio-surface'
-                      : 'border-studio-border'
-                  }`}
-                >
-                  <div className="relative aspect-video rounded-lg overflow-hidden bg-black/60 mb-2.5">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Shot Contract Grid (Left 7 Cols) */}
+        <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {storyboard.shots.map((shot, idx) => {
+            const isSelected = shot.shot_id === selectedShot.shot_id;
+            const hasKeyframe = outputs.keyframes?.includes(shot.shot_id);
+
+            return (
+              <button
+                key={shot.shot_id}
+                type="button"
+                onClick={() => handleSelectShot(shot)}
+                className={`text-left p-4 rounded-xl bg-[#111114] border transition-colors ${
+                  isSelected
+                    ? 'border-amber-500/80 ring-1 ring-amber-500/20'
+                    : 'border-white/10 hover:border-white/25'
+                }`}
+              >
+                <div className="aspect-video rounded-lg overflow-hidden bg-[#09090b] border border-white/5 mb-3 relative flex items-center justify-center">
+                  {hasKeyframe ? (
                     <img
-                      src={keyframeUrl}
+                      src={getMediaUrl(`keyframes/${shot.shot_id}.png`)}
                       alt={shot.shot_id}
                       className="w-full h-full object-cover"
-                      onError={(e) => {
-                        // Fallback image styling
-                        (e.target as HTMLElement).style.opacity = '0.5';
-                      }}
                     />
-                    <div className="absolute top-2 left-2 bg-black/70 backdrop-blur px-2 py-0.5 rounded text-[10px] font-bold text-studio-gold">
-                      #{idx + 1} • {shot.shot_id}
+                  ) : (
+                    <div className="text-center space-y-1">
+                      <span className="font-mono text-xs text-zinc-500 block">
+                        SHOT {String(idx + 1).padStart(2, '0')}
+                      </span>
+                      <span className="text-[11px] text-zinc-600 capitalize">
+                        {shot.shot_type.replace(/_/g, ' ')}
+                      </span>
                     </div>
-                    <div className="absolute bottom-2 right-2 bg-black/70 backdrop-blur px-1.5 py-0.5 rounded text-[10px] text-neutral-300">
-                      {shot.duration_sec}s
-                    </div>
-                  </div>
-
-                  <div className="text-xs text-amber-100 font-medium line-clamp-1 mb-1">
-                    {shot.narration_am}
-                  </div>
-                  <div className="text-[11px] text-neutral-400 italic line-clamp-1">
-                    "{shot.subtitle_en}"
-                  </div>
-
-                  <div className="mt-2.5 pt-2 border-t border-studio-border/60 flex items-center justify-between text-[10px] text-neutral-400">
-                    <span className="capitalize">{shot.shot_type.replace(/_/g, ' ')}</span>
-                    <span>Seed: {shot.seed}</span>
-                  </div>
+                  )}
+                  <span className="absolute top-2 left-2 px-1.5 py-0.5 rounded bg-black/70 font-mono text-[10px] text-zinc-200">
+                    {shot.shot_id}
+                  </span>
+                  <span className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded bg-black/70 font-mono text-[10px] text-zinc-400">
+                    {shot.duration_sec}s
+                  </span>
                 </div>
-              );
-            })}
-          </div>
+
+                <p className="font-ethiopic text-sm text-zinc-100 line-clamp-1">
+                  {shot.narration_am}
+                </p>
+                <p className="text-xs text-zinc-400 line-clamp-1 mt-1">
+                  “{shot.subtitle_en}”
+                </p>
+
+                <div className="mt-3 pt-2.5 border-t border-white/10 flex items-center justify-between text-[11px] text-zinc-500 font-mono">
+                  <span className="capitalize">{shot.shot_type.replace(/_/g, ' ')}</span>
+                  <span>seed {shot.seed}</span>
+                </div>
+              </button>
+            );
+          })}
         </div>
 
-        {/* Shot Editor Drawer (Right 5 Cols) */}
-        <div className="lg:col-span-5 p-5 rounded-2xl bg-studio-card border border-studio-border space-y-5 sticky top-24">
-          <div className="flex items-center justify-between pb-3 border-b border-studio-border">
-            <div className="flex items-center space-x-2">
-              <Camera className="w-5 h-5 text-studio-gold" />
-              <h3 className="font-cinematic font-bold text-white text-base">
-                Shot Lab: {selectedShot.shot_id}
-              </h3>
-            </div>
-            <span className="text-xs text-neutral-400 font-mono">
-              Duration: {selectedShot.duration_sec}s
+        {/* Shot Inspector & Editor (Right 5 Cols) */}
+        <div className="lg:col-span-5 p-6 rounded-xl bg-[#111114] border border-white/10 space-y-5 sticky top-24">
+          <div className="flex items-center justify-between border-b border-white/10 pb-3">
+            <h2 className="text-base font-semibold text-zinc-100">
+              {selectedShot.shot_id}
+            </h2>
+            <span className="font-mono text-xs text-zinc-400">
+              {selectedShot.duration_sec}s · {selectedShot.shot_type.replace(/_/g, ' ')}
             </span>
           </div>
 
           {feedback && (
             <div
-              className={`p-3 rounded-lg text-xs flex items-center gap-2 ${
+              className={`p-3 rounded-lg text-xs flex items-start gap-2 border ${
                 feedback.type === 'success'
-                  ? 'bg-emerald-950/60 text-emerald-300 border border-emerald-800'
-                  : 'bg-red-950/60 text-red-300 border border-red-800'
+                  ? 'bg-emerald-950/40 text-emerald-300 border-emerald-800/60'
+                  : 'bg-rose-950/40 text-rose-300 border-rose-800/60'
               }`}
             >
-              {feedback.type === 'success' ? <Check className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
+              {feedback.type === 'success' ? (
+                <Check className="w-4 h-4 shrink-0 mt-0.5" />
+              ) : (
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+              )}
               <span>{feedback.message}</span>
             </div>
           )}
 
           <div className="space-y-4 text-xs">
-            {/* Amharic Narration */}
             <div>
-              <label className="block text-neutral-300 font-semibold mb-1">Amharic Narration (TTS Input)</label>
-              <textarea
-                rows={2}
-                value={editForm.narration_am ?? selectedShot.narration_am}
-                onChange={(e) => setEditForm({ ...editForm, narration_am: e.target.value })}
-                className="w-full p-2.5 rounded-lg bg-studio-surface border border-studio-border text-amber-100 focus:outline-none focus:border-studio-amber font-sans"
-              />
-            </div>
-
-            {/* English Subtitle */}
-            <div>
-              <label className="block text-neutral-300 font-semibold mb-1">English Subtitle (max 40 chars/line)</label>
-              <textarea
-                rows={2}
-                value={editForm.subtitle_en ?? selectedShot.subtitle_en}
-                onChange={(e) => setEditForm({ ...editForm, subtitle_en: e.target.value })}
-                className="w-full p-2.5 rounded-lg bg-studio-surface border border-studio-border text-neutral-200 focus:outline-none focus:border-studio-amber"
-              />
-            </div>
-
-            {/* Visual Prompt */}
-            <div>
-              <label className="block text-neutral-300 font-semibold mb-1">Visual Prompt (FLUX Keyframe)</label>
+              <label className="block text-zinc-400 font-medium mb-1.5">
+                Amharic Narration (Gemini 3.8 / Edge-TTS)
+              </label>
               <textarea
                 rows={3}
-                value={editForm.visual_prompt ?? selectedShot.visual_prompt}
-                onChange={(e) => setEditForm({ ...editForm, visual_prompt: e.target.value })}
-                className="w-full p-2.5 rounded-lg bg-studio-surface border border-studio-border text-neutral-300 focus:outline-none focus:border-studio-amber"
+                disabled={!isLive}
+                value={editForm.narration_am ?? selectedShot.narration_am}
+                onChange={(e) => setEditForm({ ...editForm, narration_am: e.target.value })}
+                className="w-full p-2.5 rounded-lg bg-[#09090b] border border-white/10 text-zinc-100 font-ethiopic text-sm leading-relaxed focus:outline-none focus:border-amber-500/60 disabled:opacity-70"
               />
             </div>
 
-            {/* Motion Prompt */}
             <div>
-              <label className="block text-neutral-300 font-semibold mb-1">Motion Prompt (Wan 2.2 / Ken Burns)</label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-zinc-400 font-medium">English Subtitle</label>
+                <span className="font-mono text-[11px] text-zinc-500">
+                  {subtitleDraft.length} chars (wrapped ≤ 40/line × 2)
+                </span>
+              </div>
               <textarea
                 rows={2}
-                value={editForm.motion_prompt ?? selectedShot.motion_prompt}
-                onChange={(e) => setEditForm({ ...editForm, motion_prompt: e.target.value })}
-                className="w-full p-2.5 rounded-lg bg-studio-surface border border-studio-border text-neutral-300 focus:outline-none focus:border-studio-amber"
+                disabled={!isLive}
+                value={subtitleDraft}
+                onChange={(e) => setEditForm({ ...editForm, subtitle_en: e.target.value })}
+                className="w-full p-2.5 rounded-lg bg-[#09090b] border border-white/10 text-zinc-200 focus:outline-none focus:border-amber-500/60 disabled:opacity-70"
               />
             </div>
 
-            {/* Seed & Rationale */}
+            <div>
+              <label className="block text-zinc-400 font-medium mb-1.5">
+                Visual Prompt (Cloudflare FLUX / Gemini Image)
+              </label>
+              <textarea
+                rows={3}
+                disabled={!isLive}
+                value={editForm.visual_prompt ?? selectedShot.visual_prompt}
+                onChange={(e) => setEditForm({ ...editForm, visual_prompt: e.target.value })}
+                className="w-full p-2.5 rounded-lg bg-[#09090b] border border-white/10 text-zinc-300 leading-relaxed focus:outline-none focus:border-amber-500/60 disabled:opacity-70"
+              />
+            </div>
+
+            <div>
+              <label className="block text-zinc-400 font-medium mb-1.5">
+                Motion Prompt (Wan 2.2 / Ken Burns)
+              </label>
+              <textarea
+                rows={2}
+                disabled={!isLive}
+                value={editForm.motion_prompt ?? selectedShot.motion_prompt}
+                onChange={(e) => setEditForm({ ...editForm, motion_prompt: e.target.value })}
+                className="w-full p-2.5 rounded-lg bg-[#09090b] border border-white/10 text-zinc-300 focus:outline-none focus:border-amber-500/60 disabled:opacity-70"
+              />
+            </div>
+
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-neutral-400 mb-1">Deterministic Seed</label>
+                <label className="block text-zinc-500 mb-1">Deterministic Seed</label>
                 <input
                   type="number"
+                  disabled={!isLive}
                   value={editForm.seed ?? selectedShot.seed}
-                  onChange={(e) => setEditForm({ ...editForm, seed: parseInt(e.target.value) || 0 })}
-                  className="w-full p-2 rounded bg-studio-surface border border-studio-border text-neutral-200"
+                  onChange={(e) => setEditForm({ ...editForm, seed: parseInt(e.target.value, 10) || 0 })}
+                  className="w-full p-2 rounded-lg bg-[#09090b] border border-white/10 text-zinc-200 font-mono focus:outline-none focus:border-amber-500/60 disabled:opacity-70"
                 />
               </div>
               <div>
-                <label className="block text-neutral-400 mb-1">Shot Type</label>
-                <div className="p-2 rounded bg-studio-surface border border-studio-border text-neutral-400 capitalize">
-                  {selectedShot.shot_type.replace(/_/g, ' ')}
+                <label className="block text-zinc-500 mb-1">Rationale</label>
+                <div className="p-2 rounded-lg bg-[#09090b] border border-white/5 text-zinc-400 line-clamp-2">
+                  {selectedShot.reason}
                 </div>
               </div>
             </div>
 
-            <div className="pt-2">
-              <button
-                disabled={isUpdating}
-                onClick={handleSaveAndRegenerate}
-                className="w-full py-2.5 px-4 rounded-lg bg-gradient-to-r from-studio-amber to-studio-gold text-black font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-amber-900/30 hover:brightness-110 disabled:opacity-50 transition-all"
-              >
-                <RefreshCw className={`w-4 h-4 ${isUpdating ? 'animate-spin' : ''}`} />
-                <span>{isUpdating ? 'Regenerating Shot...' : 'Save & Regenerate Shot'}</span>
-              </button>
-            </div>
+            <button
+              type="button"
+              disabled={!isLive || isUpdating}
+              onClick={handleSaveAndRegenerate}
+              className="w-full py-2.5 px-4 rounded-lg bg-amber-500 hover:bg-amber-400 text-zinc-950 font-semibold text-xs flex items-center justify-center gap-2 transition-colors disabled:opacity-40 disabled:hover:bg-amber-500"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isUpdating ? 'animate-spin' : ''}`} />
+              <span>{isUpdating ? 'Regenerating Shot...' : 'Save & Regenerate Shot'}</span>
+            </button>
           </div>
         </div>
       </div>

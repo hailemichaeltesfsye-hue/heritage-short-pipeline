@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { Activity, DollarSign, Clock, ShieldCheck, CheckCircle2, Cpu, ArrowUpRight, Check } from 'lucide-react';
+import { Check, ShieldCheck } from 'lucide-react';
 import { MetricsData } from '../types';
 import { approveHITL } from '../api';
 
 interface ObservabilityProps {
   metrics: MetricsData;
   isLive: boolean;
-  onRefresh: () => void;
+  onRefresh: () => Promise<void>;
 }
 
 export const Observability: React.FC<ObservabilityProps> = ({ metrics, isLive, onRefresh }) => {
@@ -28,198 +28,207 @@ export const Observability: React.FC<ObservabilityProps> = ({ metrics, isLive, o
     try {
       const res = await approveHITL();
       setApprovedNotice(`Checkpoint approved at ${res.approved_at}`);
-      onRefresh();
-    } catch {
-      setApprovedNotice('Approved locally (showcase mode)');
+      await onRefresh();
+    } catch (err: unknown) {
+      setApprovedNotice(err instanceof Error ? err.message : 'Approval requires FastAPI backend.');
     } finally {
       setApproving(false);
     }
   };
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      <div className="border-b border-studio-border pb-4">
-        <h2 className="text-xl font-cinematic font-bold text-white tracking-wide">Pipeline Observability & Telemetry</h2>
-        <p className="text-sm text-neutral-400 mt-0.5">
-          Real-time execution traces, token/image API expenses, model breakdown, and Human-in-the-Loop controls
-        </p>
-      </div>
-
-      {/* HITL Checkpoint Banner */}
-      <div className="p-4 rounded-xl bg-gradient-to-r from-studio-surface to-studio-card border border-studio-amber/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-lg bg-studio-amber/20 border border-studio-amber flex items-center justify-center text-studio-gold">
-            <ShieldCheck className="w-5 h-5" />
-          </div>
-          <div>
-            <div className="text-sm font-semibold text-white">Supervisor Human-in-the-Loop (HITL) Gate</div>
-            <div className="text-xs text-neutral-400">
-              {approvedNotice || 'Autonomous mode active. Manual checkpoints pause between Director and Assembly.'}
-            </div>
-          </div>
+    <div className="space-y-8">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-white/10 pb-5">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight text-zinc-100">Telemetry</h1>
+          <p className="text-sm text-zinc-400 mt-1">
+            Live operational records parsed directly from <code className="font-mono text-zinc-300">runs.jsonl</code>
+          </p>
         </div>
 
         <button
+          type="button"
           onClick={handleApprove}
-          disabled={approving}
-          className="px-4 py-2 rounded-lg bg-studio-amber text-black font-semibold text-xs flex items-center gap-1.5 hover:bg-studio-gold transition-colors disabled:opacity-50"
+          disabled={!isLive || approving}
+          className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg border border-white/10 bg-[#111114] hover:border-white/25 text-xs font-medium text-zinc-200 transition-colors disabled:opacity-45 self-start sm:self-auto"
         >
-          <Check className="w-4 h-4" />
-          <span>{approving ? 'Approving...' : 'Advance Stage Checkpoint'}</span>
+          <ShieldCheck className="w-4 h-4 text-amber-500" />
+          <span>{approving ? 'Approving...' : 'Advance HITL Checkpoint'}</span>
         </button>
       </div>
 
-      {/* Real Top Metrics Cards */}
+      {approvedNotice && (
+        <div className="px-4 py-2.5 rounded-lg bg-[#111114] border border-white/10 text-xs text-zinc-300 flex items-center gap-2">
+          <Check className="w-3.5 h-3.5 text-emerald-400" />
+          <span>{approvedNotice}</span>
+        </div>
+      )}
+
+      {/* 4 Minimal KPI Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="p-4 rounded-xl bg-studio-card border border-studio-border">
-          <div className="flex items-center justify-between text-neutral-400 text-xs mb-2">
-            <span>Total Model Latency</span>
-            <Clock className="w-4 h-4 text-studio-gold" />
+        <div className="p-5 rounded-xl bg-[#111114] border border-white/10">
+          <div className="text-xs text-zinc-400">Logged Operations</div>
+          <div className="text-2xl font-semibold text-zinc-100 font-mono mt-2">
+            {summary.total_runs}
           </div>
-          <div className="text-2xl font-bold text-white tracking-tight">
+          <div className="text-[11px] text-zinc-500 mt-1 font-mono">
+            GPU: {metrics.estimated_gpu_minutes.toFixed(2)} min
+          </div>
+        </div>
+
+        <div className="p-5 rounded-xl bg-[#111114] border border-white/10">
+          <div className="text-xs text-zinc-400">Model Latency</div>
+          <div className="text-2xl font-semibold text-zinc-100 font-mono mt-2">
             {(summary.total_latency_ms / 1000).toFixed(2)}s
           </div>
-          <div className="text-[11px] text-neutral-500 mt-1">Aggregated generation duration</div>
+          <div className="text-[11px] text-zinc-500 mt-1">
+            Cumulative execution time
+          </div>
         </div>
 
-        <div className="p-4 rounded-xl bg-studio-card border border-studio-border">
-          <div className="flex items-center justify-between text-neutral-400 text-xs mb-2">
-            <span>List-Price Cost (USD)</span>
-            <DollarSign className="w-4 h-4 text-emerald-400" />
-          </div>
-          <div className="text-2xl font-bold text-emerald-300 tracking-tight">
+        <div className="p-5 rounded-xl bg-[#111114] border border-white/10">
+          <div className="text-xs text-zinc-400">Estimated Cost</div>
+          <div className="text-2xl font-semibold text-zinc-100 font-mono mt-2">
             ${summary.total_cost_usd.toFixed(4)}
           </div>
-          <div className="text-[11px] text-neutral-500 mt-1">Cold run ~$0.044 / Warm ~$0.004</div>
+          <div className="text-[11px] text-zinc-500 mt-1">
+            List-price USD total
+          </div>
         </div>
 
-        <div className="p-4 rounded-xl bg-studio-card border border-studio-border">
-          <div className="flex items-center justify-between text-neutral-400 text-xs mb-2">
-            <span>Cache Hit Rate</span>
-            <CheckCircle2 className="w-4 h-4 text-amber-400" />
-          </div>
-          <div className="text-2xl font-bold text-amber-200 tracking-tight">
+        <div className="p-5 rounded-xl bg-[#111114] border border-white/10">
+          <div className="text-xs text-zinc-400">Cache Hit Rate</div>
+          <div className="text-2xl font-semibold text-zinc-100 font-mono mt-2">
             {(summary.cache_hit_ratio * 100).toFixed(1)}%
           </div>
-          <div className="text-[11px] text-neutral-500 mt-1">
+          <div className="text-[11px] text-zinc-500 mt-1 font-mono">
             {summary.cache_hits} hits / {summary.cache_misses} misses
           </div>
         </div>
-
-        <div className="p-4 rounded-xl bg-studio-card border border-studio-border">
-          <div className="flex items-center justify-between text-neutral-400 text-xs mb-2">
-            <span>Total Logged Operations</span>
-            <Cpu className="w-4 h-4 text-blue-400" />
-          </div>
-          <div className="text-2xl font-bold text-white tracking-tight">
-            {summary.total_runs}
-          </div>
-          <div className="text-[11px] text-neutral-500 mt-1">
-            GPU Minutes: {metrics.estimated_gpu_minutes.toFixed(2)} min
-          </div>
-        </div>
       </div>
 
-      {/* Model & Stage Breakdown */}
+      {/* Breakdown Panels */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Models Invoked */}
-        <div className="p-5 rounded-xl bg-studio-card border border-studio-border space-y-4">
-          <h3 className="text-sm font-semibold text-white uppercase tracking-wider">Models Invoked</h3>
-          <div className="space-y-2">
-            {Object.keys(metrics.model_breakdown || {}).length === 0 ? (
-              <div className="text-xs text-neutral-500 italic">No model records in runs.jsonl yet.</div>
-            ) : (
-              Object.entries(metrics.model_breakdown).map(([model, count]) => (
-                <div key={model} className="flex items-center justify-between p-2 rounded bg-studio-surface text-xs">
-                  <span className="font-mono text-neutral-300">{model}</span>
-                  <span className="px-2 py-0.5 rounded bg-studio-amber/20 text-studio-gold font-bold">
-                    {count} calls
-                  </span>
+        <div className="p-5 rounded-xl bg-[#111114] border border-white/10 space-y-4">
+          <h2 className="text-xs font-medium uppercase tracking-wider text-zinc-400">
+            Models Invoked
+          </h2>
+          {Object.keys(metrics.model_breakdown || {}).length === 0 ? (
+            <p className="text-xs text-zinc-500">No model invocations recorded yet.</p>
+          ) : (
+            <div className="space-y-2">
+              {Object.entries(metrics.model_breakdown).map(([model, count]) => (
+                <div
+                  key={model}
+                  className="flex items-center justify-between px-3 py-2 rounded-lg bg-[#09090b] border border-white/5 text-xs"
+                >
+                  <span className="font-mono text-zinc-300 truncate pr-3">{model}</span>
+                  <span className="font-mono text-amber-400 shrink-0">{count}×</span>
                 </div>
-              ))
-            )}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Per-Stage Telemetry */}
-        <div className="p-5 rounded-xl bg-studio-card border border-studio-border space-y-4">
-          <h3 className="text-sm font-semibold text-white uppercase tracking-wider">Per-Stage Performance</h3>
-          <div className="space-y-2">
-            {Object.keys(metrics.stage_breakdown || {}).length === 0 ? (
-              <div className="text-xs text-neutral-500 italic">No stage records yet.</div>
-            ) : (
-              Object.entries(metrics.stage_breakdown).map(([stage, stats]) => (
-                <div key={stage} className="flex items-center justify-between p-2 rounded bg-studio-surface text-xs">
-                  <span className="capitalize font-medium text-neutral-200">{stage.replace(/_/g, ' ')}</span>
-                  <div className="flex items-center space-x-3 text-neutral-400 font-mono">
+        <div className="p-5 rounded-xl bg-[#111114] border border-white/10 space-y-4">
+          <h2 className="text-xs font-medium uppercase tracking-wider text-zinc-400">
+            Per-Stage Breakdown
+          </h2>
+          {Object.keys(metrics.stage_breakdown || {}).length === 0 ? (
+            <p className="text-xs text-zinc-500">No stage traces recorded yet.</p>
+          ) : (
+            <div className="space-y-2">
+              {Object.entries(metrics.stage_breakdown).map(([stage, stats]) => (
+                <div
+                  key={stage}
+                  className="flex items-center justify-between px-3 py-2 rounded-lg bg-[#09090b] border border-white/5 text-xs"
+                >
+                  <span className="capitalize text-zinc-200">{stage.replace(/_/g, ' ')}</span>
+                  <div className="flex items-center gap-4 font-mono text-zinc-400">
                     <span>{stats.count} ops</span>
                     <span>{(stats.total_latency_ms / 1000).toFixed(2)}s</span>
-                    <span className="text-emerald-400">${stats.total_cost_usd.toFixed(4)}</span>
+                    <span className="text-zinc-200">${stats.total_cost_usd.toFixed(4)}</span>
                   </div>
                 </div>
-              ))
-            )}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Real runs.jsonl Log Stream */}
-      <div className="p-5 rounded-xl bg-studio-card border border-studio-border space-y-4">
-        <h3 className="text-sm font-semibold text-white uppercase tracking-wider flex items-center justify-between">
-          <span>Real Telemetry Records (runs.jsonl)</span>
-          <span className="text-xs text-neutral-500 font-normal">Last {metrics.recent_runs?.length || 0} calls</span>
-        </h3>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs font-mono">
-            <thead className="bg-studio-surface text-neutral-400 border-b border-studio-border">
-              <tr>
-                <th className="py-2 px-3">Timestamp (UTC)</th>
-                <th className="py-2 px-3">Agent</th>
-                <th className="py-2 px-3">Stage</th>
-                <th className="py-2 px-3">Shot ID</th>
-                <th className="py-2 px-3">Model</th>
-                <th className="py-2 px-3">Latency</th>
-                <th className="py-2 px-3">Cost (USD)</th>
-                <th className="py-2 px-3">Cache</th>
-                <th className="py-2 px-3">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-studio-border/50 text-neutral-300">
-              {(metrics.recent_runs || []).map((entry, idx) => (
-                <tr key={`${entry.trace_id}-${idx}`} className="hover:bg-studio-surface/50">
-                  <td className="py-2 px-3 text-neutral-400 whitespace-nowrap">
-                    {entry.timestamp_utc ? entry.timestamp_utc.slice(11, 19) : '-'}
-                  </td>
-                  <td className="py-2 px-3 text-amber-200">{entry.agent}</td>
-                  <td className="py-2 px-3">{entry.stage}</td>
-                  <td className="py-2 px-3 text-studio-gold font-bold">{entry.shot_id || '-'}</td>
-                  <td className="py-2 px-3 text-neutral-400">{entry.model}</td>
-                  <td className="py-2 px-3">{entry.latency_ms?.toFixed(1)}ms</td>
-                  <td className="py-2 px-3 text-emerald-400">${entry.estimated_cost_usd?.toFixed(5)}</td>
-                  <td className="py-2 px-3">
-                    {entry.cache_hit ? (
-                      <span className="text-amber-400 font-bold">HIT</span>
-                    ) : (
-                      <span className="text-neutral-500">MISS</span>
-                    )}
-                  </td>
-                  <td className="py-2 px-3">
-                    <span
-                      className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                        entry.status === 'success'
-                          ? 'bg-emerald-950 text-emerald-300'
-                          : 'bg-amber-950 text-amber-300'
-                      }`}
-                    >
-                      {entry.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      {/* runs.jsonl Stream Table */}
+      <div className="rounded-xl bg-[#111114] border border-white/10 overflow-hidden">
+        <div className="px-5 py-4 border-b border-white/10 flex items-center justify-between">
+          <h2 className="text-xs font-medium uppercase tracking-wider text-zinc-400">
+            Execution Trace Log
+          </h2>
+          <span className="font-mono text-xs text-zinc-500">
+            {metrics.recent_runs?.length || 0} recent entries
+          </span>
         </div>
+
+        {!metrics.recent_runs || metrics.recent_runs.length === 0 ? (
+          <div className="p-10 text-center text-xs text-zinc-500">
+            No telemetry recorded in <code className="font-mono text-zinc-400">runs.jsonl</code> yet.
+            Run the pipeline to inspect live latency, model fallbacks, and cache hits.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs font-mono">
+              <thead className="bg-[#09090b] text-zinc-500 border-b border-white/10">
+                <tr>
+                  <th className="py-2.5 px-4 font-medium">Time (UTC)</th>
+                  <th className="py-2.5 px-4 font-medium">Stage</th>
+                  <th className="py-2.5 px-4 font-medium">Shot</th>
+                  <th className="py-2.5 px-4 font-medium">Provider / Model</th>
+                  <th className="py-2.5 px-4 font-medium">Latency</th>
+                  <th className="py-2.5 px-4 font-medium">Cache</th>
+                  <th className="py-2.5 px-4 font-medium">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5 text-zinc-300">
+                {metrics.recent_runs.map((entry, idx) => (
+                  <tr key={`${entry.trace_id}-${idx}`} className="hover:bg-white/[0.02]">
+                    <td className="py-2.5 px-4 text-zinc-500 whitespace-nowrap">
+                      {entry.timestamp_utc ? entry.timestamp_utc.slice(11, 19) : '—'}
+                    </td>
+                    <td className="py-2.5 px-4 text-zinc-300 whitespace-nowrap">{entry.stage}</td>
+                    <td className="py-2.5 px-4 text-zinc-200 whitespace-nowrap">
+                      {entry.shot_id || '—'}
+                    </td>
+                    <td className="py-2.5 px-4 text-zinc-400 max-w-xs truncate" title={entry.error || entry.model}>
+                      {entry.provider} · {entry.model}
+                    </td>
+                    <td className="py-2.5 px-4 text-zinc-400 whitespace-nowrap">
+                      {entry.latency_ms?.toFixed(0)}ms
+                    </td>
+                    <td className="py-2.5 px-4 whitespace-nowrap">
+                      {entry.cache_hit ? (
+                        <span className="text-amber-400">HIT</span>
+                      ) : (
+                        <span className="text-zinc-600">MISS</span>
+                      )}
+                    </td>
+                    <td className="py-2.5 px-4 whitespace-nowrap">
+                      <span
+                        title={entry.error || undefined}
+                        className={`px-2 py-0.5 rounded text-[10px] ${
+                          entry.status === 'success'
+                            ? 'bg-emerald-950/60 text-emerald-300 border border-emerald-800/40'
+                            : entry.status === 'fallback'
+                            ? 'bg-amber-950/60 text-amber-300 border border-amber-800/40'
+                            : 'bg-rose-950/60 text-rose-300 border border-rose-800/40'
+                        }`}
+                      >
+                        {entry.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );
