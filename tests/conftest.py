@@ -21,6 +21,9 @@ def isolate_pipeline_workspace(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) 
     tmp_runs = tmp_path / "runs.jsonl"
     tmp_outputs = tmp_path / "outputs"
     tmp_narr = tmp_outputs / "narration"
+    tmp_narr_am = tmp_narr / "am"
+    tmp_narr_en = tmp_narr / "en"
+    tmp_narr_rec = tmp_outputs / "narration_recorded"
     tmp_kf = tmp_outputs / "keyframes"
     tmp_ref = tmp_outputs / "reference"
     tmp_shots = tmp_outputs / "shots"
@@ -35,6 +38,9 @@ def isolate_pipeline_workspace(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) 
     monkeypatch.setattr(cache_mod, "MANIFEST_PATH", tmp_manifest)
 
     monkeypatch.setattr(narration_mod, "OUTPUTS_NARRATION_DIR", tmp_narr)
+    monkeypatch.setattr(narration_mod, "OUTPUTS_NARRATION_AM_DIR", tmp_narr_am)
+    monkeypatch.setattr(narration_mod, "OUTPUTS_NARRATION_EN_DIR", tmp_narr_en)
+    monkeypatch.setattr(narration_mod, "OUTPUTS_NARRATION_RECORDED_DIR", tmp_narr_rec)
 
     monkeypatch.setattr(keyframes_mod, "OUTPUTS_KEYFRAMES_DIR", tmp_kf)
     monkeypatch.setattr(keyframes_mod, "OUTPUTS_REFERENCE_DIR", tmp_ref)

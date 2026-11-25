@@ -14,19 +14,26 @@ from typing import Any, Dict, Optional
 MANIFEST_PATH = Path("outputs/.cache_manifest.json")
 
 
-def compute_shot_hash(shot_data: Dict[str, Any], style_block: Optional[Dict[str, Any]] = None) -> str:
+def compute_shot_hash(
+    shot_data: Dict[str, Any],
+    style_block: Optional[Dict[str, Any]] = None,
+    language: Optional[str] = None,
+) -> str:
     """Compute a deterministic SHA-256 hash of a shot specification."""
-    normalized = {
+    normalized: Dict[str, Any] = {
         "shot_id": shot_data.get("shot_id"),
         "duration_sec": shot_data.get("duration_sec"),
         "shot_type": shot_data.get("shot_type"),
         "visual_prompt": shot_data.get("visual_prompt", "").strip(),
         "motion_prompt": shot_data.get("motion_prompt", "").strip(),
         "narration_am": shot_data.get("narration_am", "").strip(),
+        "narration_en": shot_data.get("narration_en", "").strip(),
         "subtitle_en": shot_data.get("subtitle_en", "").strip(),
         "seed": shot_data.get("seed"),
         "style_block": style_block or {},
     }
+    if language is not None:
+        normalized["language"] = language
     encoded = json.dumps(normalized, sort_keys=True, ensure_ascii=False).encode("utf-8")
     return hashlib.sha256(encoded).hexdigest()
 

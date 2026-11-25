@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 import typer
 from rich.console import Console
 from rich.table import Table
@@ -22,18 +22,32 @@ app = typer.Typer(help="AI Filmmaking Pipeline: The Heritage Short")
 console = Console()
 
 
+def _parse_languages(language: str) -> List[str]:
+    lang = language.strip().lower()
+    if lang == "both":
+        return ["en", "am"]
+    if lang in ("en", "am"):
+        return [lang]
+    raise typer.BadParameter(f"Invalid --language '{language}'. Choose from: en, am, both")
+
+
 @app.command()
 def run(
     stage: str = typer.Option("all", "--stage", help="Stage to run: all, keyframes, narration, shots, music, assemble"),
     storyboard: Path = typer.Option(Path("storyboard.json"), "--storyboard", "-s", help="Path to storyboard JSON"),
+    language: str = typer.Option("en", "--language", "-L", help="Narration language: en (primary), am, or both"),
     dry_run: bool = typer.Option(False, "--dry-run", help="Run in deterministic dry-run mode"),
     hitl: bool = typer.Option(False, "--hitl", help="Enable Human-In-The-Loop approval checkpoints"),
     shot: Optional[str] = typer.Option(None, "--shot", help="Target a single shot_id"),
     force: bool = typer.Option(False, "--force", "-f", help="Bypass cache and force regeneration"),
 ):
     """Execute the multi-agent pipeline to generate keyframes, audio, shots, and final dual-aspect cut."""
+    langs = _parse_languages(language)
     console.print("[bold cyan]AI Filmmaking Pipeline: The Heritage Short[/bold cyan]")
-    console.print(f"Stage: [bold yellow]{stage}[/bold yellow] | Storyboard: [green]{storyboard}[/green] | Dry-run: {dry_run}")
+    console.print(
+        f"Stage: [bold yellow]{stage}[/bold yellow] | Language: [bold magenta]{language}[/bold magenta] | "
+        f"Storyboard: [green]{storyboard}[/green] | Dry-run: {dry_run}"
+    )
 
     if not storyboard.exists():
         console.print(f"[red]Storyboard file {storyboard} does not exist[/red]")
@@ -44,43 +58,45 @@ def run(
 
     if stage in ("all", "graph"):
         graph = create_pipeline_graph()
-        initial_state = {
-            "storyboard_path": str(storyboard),
-            "storyboard_data": storyboard_data,
-            "dry_run": dry_run,
-            "hitl": hitl,
-            "target_shot_id": shot,
-            "force": force,
-            "stage": stage,
-            "trace_id": "cli-run",
-            "is_valid_schema": False,
-            "safety_passed": False,
-            "shot_hashes": {},
-            "keyframes": {},
-            "audio_files": {},
-            "shots_video": {},
-            "score_path": None,
-            "radio_cut_path": None,
-            "final_16x9_path": None,
-            "final_9x16_path": None,
-            "errors": [],
-            "retry_counts": {},
-            "step_status": {},
-            "hitl_paused": False,
-        }
+        for lang in langs:
+            initial_state = {
+                "storyboard_path": str(storyboard),
+                "storyboard_data": storyboard_data,
+                "dry_run": dry_run,
+                "hitl": hitl,
+                "language": lang,
+                "target_shot_id": shot,
+                "force": force,
+                "stage": stage,
+                "trace_id": f"cli-run-{lang}",
+                "is_valid_schema": False,
+                "safety_passed": False,
+                "shot_hashes": {},
+                "keyframes": {},
+                "audio_files": {},
+                "shots_video": {},
+                "score_path": None,
+                "radio_cut_path": None,
+                "final_16x9_path": None,
+                "final_9x16_path": None,
+                "errors": [],
+                "retry_counts": {},
+                "step_status": {},
+                "hitl_paused": False,
+            }
 
-        result = graph.invoke(initial_state)
-        if result.get("errors"):
-            console.print("[bold red]Pipeline encountered errors:[/bold red]")
-            for err in result["errors"]:
-                console.print(f" - [red]{err}[/red]")
-            raise typer.Exit(code=1)
+            result = graph.invoke(initial_state)
+            if result.get("errors"):
+                console.print(f"[bold red]Pipeline ({lang}) encountered errors:[/bold red]")
+                for err in result["errors"]:
+                    console.print(f" - [red]{err}[/red]")
+                raise typer.Exit(code=1)
 
-        console.print("[bold green]Pipeline completed successfully![/bold green]")
-        if result.get("final_16x9_path"):
-            console.print(f"16:9 Master: [bold yellow]{result['final_16x9_path']}[/bold yellow]")
-        if result.get("final_9x16_path"):
-            console.print(f"9:16 Vertical: [bold yellow]{result['final_9x16_path']}[/bold yellow]")
+            console.print(f"[bold green]Pipeline ({lang}) completed successfully![/bold green]")
+            if result.get("final_16x9_path"):
+                console.print(f"16:9 Master ({lang}): [bold yellow]{result['final_16x9_path']}[/bold yellow]")
+            if result.get("final_9x16_path"):
+                console.print(f"9:16 Vertical ({lang}): [bold yellow]{result['final_9x16_path']}[/bold yellow]")
         return
 
     if stage == "keyframes":
@@ -102,19 +118,21 @@ def run(
             console.print("[bold green]Keyframes stage complete: outputs/keyframes/[/bold green]")
 
     elif stage == "narration":
-        failed = []
-        for s in storyboard_data.get("shots", []):
-            if shot and s["shot_id"] != shot:
-                continue
-            ok, _, model_used, _ = generate_shot_narration(s, dry_run=dry_run)
-            if not ok:
-                failed.append(s["shot_id"])
-            else:
-                console.print(f" - {s['shot_id']}: [green]{model_used}[/green]")
-        if failed:
-            console.print(f"[red]Narration generation failed for: {', '.join(failed)}[/red]")
-            raise typer.Exit(code=1)
-        console.print("[bold green]Narration stage complete: outputs/narration/[/bold green]")
+        for lang in langs:
+            console.print(f"[bold cyan]Synthesizing {lang.upper()} narration...[/bold cyan]")
+            failed = []
+            for s in storyboard_data.get("shots", []):
+                if shot and s["shot_id"] != shot:
+                    continue
+                ok, out_wav, model_used, _ = generate_shot_narration(s, dry_run=dry_run, language=lang)
+                if not ok:
+                    failed.append(s["shot_id"])
+                else:
+                    console.print(f" - [{lang}] {s['shot_id']}: [green]{model_used}[/green] -> {out_wav}")
+            if failed:
+                console.print(f"[red]Narration ({lang}) generation failed for: {', '.join(failed)}[/red]")
+                raise typer.Exit(code=1)
+            console.print(f"[bold green]Narration ({lang}) stage complete: outputs/narration/{lang}/[/bold green]")
 
     elif stage == "shots":
         style_block = storyboard_data.get("style_block", {})
@@ -135,8 +153,12 @@ def run(
         console.print("[bold green]Music stage complete: outputs/music/score_normalized.wav[/bold green]")
 
     elif stage == "assemble":
-        final_16x9, final_9x16 = assemble_full_dual_aspect_pipeline(storyboard_data, dry_run=dry_run)
-        console.print(f"[bold green]Assembly complete: {final_16x9} & {final_9x16}[/bold green]")
+        for lang in langs:
+            console.print(f"[bold cyan]Assembling {lang.upper()} cinema masters...[/bold cyan]")
+            final_16x9, final_9x16 = assemble_full_dual_aspect_pipeline(
+                storyboard_data, dry_run=dry_run, language=lang
+            )
+            console.print(f"[bold green]Assembly ({lang}) complete: {final_16x9} & {final_9x16}[/bold green]")
 
     else:
         console.print(f"[red]Unknown stage '{stage}'[/red]")

@@ -38,6 +38,14 @@
   - Changed all path defaults to `Optional[Path] = None` resolved dynamically at call time.
   - Added `tests/conftest.py` (`autouse=True`) isolating all test I/O via `tmp_path` and `monkeypatch`, and isolated `test_api_update_shot_validation_direct` to a copied `storyboard.json`.
 
+### Incident #5: Synthetic Amharic TTS Non-Native Accent on Regional Place Names
+- **Root Cause**:
+  - When Gemini `models/gemini-3.8-flash` native `AUDIO` returned `503 UNAVAILABLE` or `400 INVALID_ARGUMENT`, fallback `edge-tts` (`am-ET-AmehaNeural`) pronounced regional Ethiopian highland place names and liturgical terms (`Wegeltena`, `Delanta`, `Kombolcha`, `Diqquna`) with noticeably synthetic cadence and non-native stress at `-5%` rate.
+- **Permanent Fix**:
+  - Promoted polished English documentary narration (`en-US-AndrewMultilingualNeural`, `rate="-6%"`, `pitch="-2Hz"`, dedicated `narration_en` script field) as the accessible primary master track (`final_16x9.mp4` / `final_9x16.mp4`).
+  - Retuned Amharic Edge-TTS prosody (`rate="-10%"`, `pitch="-2Hz"`, configurable `NARRATION_AM_VOICE`) alongside language-isolated outputs (`outputs/narration/am/`, `final_16x9_am.mp4`).
+  - Added optional native human voice override (`outputs/narration_recorded/{lang}/{shot_id}.{wav,mp3,m4a}`), normalized via FFmpeg to `24000 Hz` mono WAV and logged honestly as `provider="human-recorded"`.
+
 ---
 
 ## 2. Runtime Failure & Mitigation Policy Matrix

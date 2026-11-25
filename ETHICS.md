@@ -1,4 +1,4 @@
-﻿# Ethical AI Framework & Governance: The Heritage Short
+# Ethical AI Framework & Governance: The Heritage Short
 
 ## 1. Executive Summary & Purpose
 "AI-Content Generation: The Heritage Short" is a narrative film celebrating Ethiopian heritage, personal resilience, and cultural legacy through an autobiographical account titled *"Hulum Neger Lebego New (Everything for Good)"*. This document codifies ethical AI principles, biometric representation permissions, data privacy protections, and safety controls guiding every stage of production.
@@ -40,3 +40,14 @@
 ## 6. Secret Leaks & API Security
 - Zero credentials, tokens, or private endpoints are permitted in version control.
 - Automated static checks enforce secret elimination prior to commit and deployment.
+
+---
+
+## 7. Human Voice Recording Consent Protocol
+- **Explicit Self-Consent for Native Overrides**: When optional native human voice recordings are supplied under `outputs/narration_recorded/{lang}/{shot_id}.{wav,mp3,m4a}`, Hailemichael Tesfaye explicitly grants informed self-consent for processing and normalizing (`24000 Hz` mono WAV via FFmpeg) his authentic spoken recordings solely for this autobiographical film.
+- **No Unconsented Voice Cloning**: Zero external voice cloning models are trained on human recordings; recordings are used verbatim as direct audio tracks (`provider="human-recorded"`).
+
+---
+
+## 8. Dual-Language Accessibility & Representation
+- **English Primary + Amharic Cultural Track**: Providing polished English voiceover (`--language en`) alongside the original Amharic version (`--language am`) and burned-in English subtitles ensures both global audience accessibility and authentic Ethiopian cultural preservation.

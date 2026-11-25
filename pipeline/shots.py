@@ -193,12 +193,22 @@ def process_shot(
     dry_run: bool = False,
     force: bool = False,
     trace_id: Optional[str] = None,
+    language: str = "en",
 ) -> Tuple[bool, Path, bool]:
-    """Process narration for a single shot (cache-aware)."""
+    """Process narration for a single shot (cache-aware, language-aware)."""
+    lang = language.lower()
     shot_id = shot["shot_id"]
     shot_hash = compute_shot_hash(shot, style_block)
-    narration_dir = narration_mod.OUTPUTS_NARRATION_DIR
-    expected_audio = narration_dir / f"{shot_id}.wav"
+    base_dir = narration_mod.OUTPUTS_NARRATION_DIR
+    lang_dir = (
+        narration_mod.OUTPUTS_NARRATION_EN_DIR
+        if lang == "en"
+        else narration_mod.OUTPUTS_NARRATION_AM_DIR
+    )
+    # If caller patched OUTPUTS_NARRATION_DIR without patching EN/AM dirs, derive under OUTPUTS_NARRATION_DIR
+    if str(lang_dir).replace("\\", "/") == f"outputs/narration/{lang}" and str(base_dir).replace("\\", "/") != "outputs/narration":
+        lang_dir = base_dir / lang
+    expected_audio = lang_dir / f"{shot_id}.wav"
 
     if not force and is_shot_cached(shot_id, shot_hash, [expected_audio]):
         # In live mode, refuse cached silent WAVs
@@ -209,7 +219,7 @@ def process_shot(
                 shot_id=shot_id,
                 provider="cache",
                 model="cache-manifest",
-                parameters={"shot_hash": shot_hash},
+                parameters={"shot_hash": shot_hash, "language": lang},
                 seed=shot.get("seed"),
                 latency_ms=0.5,
                 estimated_cost_usd=0.0,
@@ -221,9 +231,10 @@ def process_shot(
 
     success, audio_path, _, _ = narration_mod.generate_shot_narration(
         shot=shot,
-        output_dir=narration_dir,
+        output_dir=base_dir,
         dry_run=dry_run,
         trace_id=trace_id,
+        language=lang,
     )
 
     if success and audio_path.exists() and audio_path.stat().st_size > 0:
@@ -231,7 +242,7 @@ def process_shot(
             update_shot_cache(
                 shot_id=shot_id,
                 shot_hash=shot_hash,
-                artifacts={"narration": str(audio_path)},
+                artifacts={f"narration_{lang}": str(audio_path)},
             )
             return True, audio_path, False
 

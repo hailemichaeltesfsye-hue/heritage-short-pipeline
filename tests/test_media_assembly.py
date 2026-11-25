@@ -6,7 +6,9 @@ import pytest
 
 from pipeline.assemble import (
     calculate_dynamic_shot_durations,
+    generate_clean_subtitles_srt,
     render_ai_end_card_video,
+    render_title_intro_card_video,
     wrap_subtitle_text,
 )
 from pipeline.keyframes import create_deterministic_reference_image
@@ -66,6 +68,25 @@ def test_ai_end_card_generation(tmp_path):
 
     assert end_card.exists()
     assert end_card.stat().st_size > 10000
+
+
+def test_title_intro_card_generation(tmp_path):
+    """Verify 3-second classical opening title intro card renders cleanly in 16:9 and 9:16."""
+    intro_16 = tmp_path / "intro_16x9.mp4"
+    intro_9 = tmp_path / "intro_9x16.mp4"
+    render_title_intro_card_video(intro_16, width=1920, height=1080, duration_sec=3.0)
+    render_title_intro_card_video(intro_9, width=1080, height=1920, duration_sec=3.0)
+
+    assert intro_16.exists() and intro_16.stat().st_size > 10000
+    assert intro_9.exists() and intro_9.stat().st_size > 10000
+
+
+def test_subtitles_offset_for_intro_card(tmp_path):
+    """Verify SRT timestamps shift by +3.0s so subtitles align precisely with Shot 1 after intro."""
+    shots = [{"shot_id": "shot_01", "subtitle_en": "Opening line."}]
+    srt = generate_clean_subtitles_srt(shots, [6.0], output_path=tmp_path / "sub.srt", time_offset_sec=3.0)
+    content = srt.read_text(encoding="utf-8")
+    assert "00:00:03,000 --> 00:00:09,000" in content
 
 
 def test_dynamic_shot_durations_bounds(tmp_path):

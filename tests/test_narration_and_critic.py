@@ -63,11 +63,12 @@ def test_narration_live_falls_back_to_edge_tts_and_logs_fallback(tmp_path, monke
     monkeypatch.setattr(narration_mod, "synthesize_edge_tts_amharic", fake_edge)
 
     shot = {"shot_id": "shot_01", "duration_sec": 6.0, "narration_am": "ሰላም", "seed": 10101}
-    ok, wav_path, model_used, _ = narration_mod.generate_shot_narration(shot, dry_run=False)
+    ok, wav_path, model_used, _ = narration_mod.generate_shot_narration(shot, dry_run=False, language="am")
 
     assert ok is True
     assert model_used == "am-ET-AmehaNeural"
     assert wav_path.exists()
+    assert wav_path.parent.name == "am"
     assert compute_wav_rms(wav_path) > 0.1
 
     log_lines = (tmp_path / "runs.jsonl").read_text(encoding="utf-8").strip().splitlines()
@@ -92,7 +93,7 @@ def test_narration_live_both_providers_fail_never_writes_silence(tmp_path, monke
     )
 
     shot = {"shot_id": "shot_01", "duration_sec": 6.0, "narration_am": "ሰላም", "seed": 10101}
-    ok, wav_path, model_used, _ = narration_mod.generate_shot_narration(shot, dry_run=False)
+    ok, wav_path, model_used, _ = narration_mod.generate_shot_narration(shot, dry_run=False, language="am")
 
     assert ok is False
     assert model_used == "failed"
@@ -100,6 +101,54 @@ def test_narration_live_both_providers_fail_never_writes_silence(tmp_path, monke
 
     last_rec = json.loads((tmp_path / "runs.jsonl").read_text(encoding="utf-8").strip().splitlines()[-1])
     assert last_rec["status"] == "failed"
+
+
+def test_english_edge_tts_synthesizes_non_silent_wav(tmp_path, monkeypatch):
+    """Primary English narration path writes non-silent 24kHz WAV into outputs/narration/en/."""
+    def fake_en_edge(text: str, output_path: Path, voice: str = narration_mod.EDGE_TTS_EN_VOICE) -> str:
+        _write_tone_wav(output_path, duration_sec=2.0, sample_rate=24000)
+        return voice
+
+    monkeypatch.setattr(narration_mod, "synthesize_edge_tts_english", fake_en_edge)
+
+    shot = {
+        "shot_id": "shot_01",
+        "duration_sec": 6.0,
+        "narration_en": "My story begins in the cool mornings of Wegeltena.",
+        "subtitle_en": "My story begins in the cool mornings of Wegeltena, Delanta.",
+        "seed": 10101,
+    }
+    ok, wav_path, model_used, _ = narration_mod.generate_shot_narration(shot, dry_run=False, language="en")
+
+    assert ok is True
+    assert model_used == "en-US-AndrewMultilingualNeural"
+    assert wav_path.exists()
+    assert wav_path.parent.name == "en"
+    assert compute_wav_rms(wav_path) > 0.1
+
+    last_rec = json.loads((tmp_path / "runs.jsonl").read_text(encoding="utf-8").strip().splitlines()[-1])
+    assert last_rec["status"] == "success"
+    assert last_rec["provider"] == "edge-tts"
+    assert last_rec["parameters"]["language"] == "en"
+
+
+def test_human_recorded_override_logs_provider(tmp_path):
+    """When outputs/narration_recorded/{lang}/{shot_id}.wav exists, use it and log provider='human-recorded'."""
+    rec_wav = tmp_path / "outputs" / "narration_recorded" / "am" / "shot_01.wav"
+    _write_tone_wav(rec_wav, duration_sec=2.0, sample_rate=24000)
+
+    shot = {"shot_id": "shot_01", "duration_sec": 6.0, "narration_am": "ሰላም", "seed": 10101}
+    ok, wav_path, model_used, _ = narration_mod.generate_shot_narration(shot, dry_run=False, language="am")
+
+    assert ok is True
+    assert model_used == "human-recorded"
+    assert wav_path.exists()
+    assert wav_path.parent.name == "am"
+    assert compute_wav_rms(wav_path) > 0.1
+
+    last_rec = json.loads((tmp_path / "runs.jsonl").read_text(encoding="utf-8").strip().splitlines()[-1])
+    assert last_rec["provider"] == "human-recorded"
+    assert last_rec["status"] == "success"
 
 
 def test_keyframes_live_never_writes_fake_placeholder_on_failure(tmp_path, monkeypatch):

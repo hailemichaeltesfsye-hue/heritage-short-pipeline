@@ -7,6 +7,9 @@ from pipeline.ffmpeg_utils import get_audio_duration
 
 
 def test_langgraph_pipeline_dry_run():
+    root_runs = Path("runs.jsonl")
+    runs_before = root_runs.read_text(encoding="utf-8-sig") if root_runs.exists() else None
+
     graph = create_pipeline_graph()
     assert graph is not None
 
@@ -15,6 +18,7 @@ def test_langgraph_pipeline_dry_run():
         "storyboard_data": {},
         "dry_run": True,
         "hitl": False,
+        "language": "en",
         "target_shot_id": None,
         "force": False,
         "stage": "all",
@@ -69,10 +73,9 @@ def test_langgraph_pipeline_dry_run():
     media9_ok, media9_errors = verify_output_media(p9)
     assert media9_ok, f"9:16 media verification failed: {media9_errors}"
 
-    # Ensure root runs.jsonl was never polluted during isolated pytest
-    root_runs = Path("runs.jsonl")
-    if root_runs.exists():
-        assert root_runs.read_text(encoding="utf-8-sig").strip() == ""
+    # Ensure root runs.jsonl was never mutated during isolated pytest
+    runs_after = root_runs.read_text(encoding="utf-8-sig") if root_runs.exists() else None
+    assert runs_after == runs_before
 
 
 def test_mcp_tools():

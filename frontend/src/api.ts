@@ -65,6 +65,7 @@ export async function triggerPipelineRun(
   stage: string,
   shotId?: string,
   dryRun = false,
+  language: 'en' | 'am' | 'both' = 'en',
 ): Promise<Record<string, unknown>> {
   const live = isBackendLive ?? (await checkBackendConnection());
   if (!live) {
@@ -73,7 +74,7 @@ export async function triggerPipelineRun(
   const res = await fetch(`${API_BASE}/api/pipeline/run`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ stage, shot_id: shotId, dry_run: dryRun }),
+    body: JSON.stringify({ stage, shot_id: shotId, dry_run: dryRun, language }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));

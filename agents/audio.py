@@ -19,6 +19,7 @@ def audio_voice_node(state: PipelineState) -> Dict[str, Any]:
     target_shot = state.get("target_shot_id")
     dry_run = bool(state.get("dry_run", False))
     force = bool(state.get("force", False))
+    language = str(state.get("language", "en") or "en").lower()
     trace_id = state.get("trace_id")
 
     audio_files = dict(state.get("audio_files", {}))
@@ -37,6 +38,7 @@ def audio_voice_node(state: PipelineState) -> Dict[str, Any]:
             dry_run=dry_run,
             force=force,
             trace_id=trace_id,
+            language=language,
         )
 
         if success and audio_path.exists() and audio_path.stat().st_size > 0:

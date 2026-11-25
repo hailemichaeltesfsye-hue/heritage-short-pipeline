@@ -3,6 +3,7 @@ import {
   ChevronDown,
   ChevronUp,
   Film,
+  Languages,
   Monitor,
   Play,
   Radio,
@@ -12,7 +13,7 @@ import {
   Volume2,
   X,
 } from 'lucide-react';
-import { AspectRatioMode, OutputsManifest, StoryboardData } from '../types';
+import { AspectRatioMode, NarrationLanguage, OutputsManifest, StoryboardData } from '../types';
 import { getMediaUrl, triggerPipelineRun } from '../api';
 
 interface CinemaScreeningProps {
@@ -29,6 +30,7 @@ export const CinemaScreening: React.FC<CinemaScreeningProps> = ({
   onRefresh,
 }) => {
   const [aspectRatio, setAspectRatio] = useState<AspectRatioMode>('16x9');
+  const [selectedLang, setSelectedLang] = useState<NarrationLanguage>('en');
   const [currentShotIndex, setCurrentShotIndex] = useState<number>(0);
   const [showRefModal, setShowRefModal] = useState<boolean>(false);
   const [showStyleDrawer, setShowStyleDrawer] = useState<boolean>(false);
@@ -37,23 +39,39 @@ export const CinemaScreening: React.FC<CinemaScreeningProps> = ({
   const [renderError, setRenderError] = useState<string | null>(null);
 
   const mediaRelPath =
-    aspectRatio === '16x9'
-      ? 'final_16x9.mp4'
+    selectedLang === 'en'
+      ? aspectRatio === '16x9'
+        ? 'final_16x9.mp4'
+        : aspectRatio === '9x16'
+          ? 'final_9x16.mp4'
+          : 'radio_cut.mp4'
       : aspectRatio === '9x16'
-      ? 'final_9x16.mp4'
-      : 'radio_cut.mp4';
+        ? 'final_9x16_am.mp4'
+        : 'final_16x9_am.mp4';
+
+  const srtRelPath =
+    selectedLang === 'am' && outputs.files?.['subtitles_am.srt']
+      ? 'subtitles_am.srt'
+      : 'subtitles.srt';
 
   const videoSrc = getMediaUrl(mediaRelPath);
   const videoExists = Boolean(outputs.files?.[mediaRelPath]) && !videoError;
   const charSheetExists = Boolean(outputs.files?.['reference/character_sheet.png']);
 
   const currentShot = storyboard.shots[currentShotIndex] || storyboard.shots[0];
-  const shotHasNarration = outputs.narration?.includes(currentShot.shot_id);
+  const langNarrationList =
+    selectedLang === 'en' ? outputs.narration_en : outputs.narration_am;
+  const usesLangSubdir = Boolean(langNarrationList?.includes(currentShot.shot_id));
+  const shotHasNarration =
+    usesLangSubdir || Boolean(outputs.narration?.includes(currentShot.shot_id));
+  const shotAudioSrc = usesLangSubdir
+    ? getMediaUrl(`narration/${selectedLang}/${currentShot.shot_id}.wav`)
+    : getMediaUrl(`narration/${currentShot.shot_id}.wav`);
 
   useEffect(() => {
     setVideoError(false);
     setRenderError(null);
-  }, [aspectRatio, outputs]);
+  }, [aspectRatio, selectedLang, outputs]);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -67,7 +85,7 @@ export const CinemaScreening: React.FC<CinemaScreeningProps> = ({
     setRendering(true);
     setRenderError(null);
     try {
-      await triggerPipelineRun('all', undefined, false);
+      await triggerPipelineRun('all', undefined, false, selectedLang);
       await onRefresh();
     } catch (err: unknown) {
       setRenderError(err instanceof Error ? err.message : 'Pipeline execution failed');
@@ -85,12 +103,12 @@ export const CinemaScreening: React.FC<CinemaScreeningProps> = ({
         Awaiting render — run pipeline stage
       </div>
       <p className="text-xs text-zinc-500 mt-1.5 max-w-sm leading-relaxed">
-        {mediaRelPath} has not been rendered to disk yet. Run the live pipeline to synthesize
-        Amharic speech, FLUX keyframes, and dual-aspect masters.
+        {mediaRelPath} has not been rendered to disk yet. Run the live pipeline to synthesize{' '}
+        {selectedLang === 'en' ? 'English' : 'Amharic'} narration, opening title card, and dual-aspect masters.
       </p>
       <div className="mt-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-zinc-900 border border-white/10 font-mono text-[11px] text-zinc-300">
         <Terminal className="w-3.5 h-3.5 text-amber-500" />
-        <span>uv run python -m pipeline.run --stage all</span>
+        <span>uv run python -m pipeline.run run --language {selectedLang}</span>
       </div>
 
       {isLive && (
@@ -113,8 +131,8 @@ export const CinemaScreening: React.FC<CinemaScreeningProps> = ({
 
   return (
     <div className="space-y-8">
-      {/* Page Title & Aspect Switcher */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-white/10 pb-5">
+      {/* Page Title, Language Toggle & Aspect Switcher */}
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 border-b border-white/10 pb-5">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-zinc-100">Screening Room</h1>
           <p className="text-sm text-zinc-400 mt-1 font-ethiopic">
@@ -122,43 +140,74 @@ export const CinemaScreening: React.FC<CinemaScreeningProps> = ({
           </p>
         </div>
 
-        <div className="inline-flex items-center bg-[#111114] p-1 rounded-lg border border-white/10 self-start sm:self-auto">
-          <button
-            type="button"
-            onClick={() => setAspectRatio('16x9')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${
-              aspectRatio === '16x9'
-                ? 'bg-zinc-800 text-zinc-100 border border-white/10'
-                : 'text-zinc-400 hover:text-zinc-200'
-            }`}
+        <div className="flex flex-wrap items-center gap-3 self-start lg:self-auto">
+          {/* Language Switcher */}
+          <div
+            className="inline-flex items-center bg-[#111114] p-1 rounded-lg border border-white/10"
+            role="group"
+            aria-label="Narration language"
           >
-            <Monitor className="w-3.5 h-3.5" />
-            <span>16:9 Master</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setAspectRatio('9x16')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${
-              aspectRatio === '9x16'
-                ? 'bg-zinc-800 text-zinc-100 border border-white/10'
-                : 'text-zinc-400 hover:text-zinc-200'
-            }`}
-          >
-            <Smartphone className="w-3.5 h-3.5" />
-            <span>9:16 Vertical</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setAspectRatio('radio_cut')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${
-              aspectRatio === 'radio_cut'
-                ? 'bg-zinc-800 text-zinc-100 border border-white/10'
-                : 'text-zinc-400 hover:text-zinc-200'
-            }`}
-          >
-            <Radio className="w-3.5 h-3.5" />
-            <span>Radio Cut</span>
-          </button>
+            <span className="flex items-center gap-1 pl-2 pr-1.5 text-[11px] text-zinc-500">
+              <Languages className="w-3.5 h-3.5 text-amber-500" />
+            </span>
+            <button
+              type="button"
+              onClick={() => setSelectedLang('en')}
+              className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${selectedLang === 'en'
+                  ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
+                  : 'text-zinc-400 hover:text-zinc-200'
+                }`}
+            >
+              English (Primary)
+            </button>
+            <button
+              type="button"
+              onClick={() => setSelectedLang('am')}
+              className={`px-2.5 py-1.5 rounded-md text-xs font-medium font-ethiopic transition-colors whitespace-nowrap ${selectedLang === 'am'
+                  ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
+                  : 'text-zinc-400 hover:text-zinc-200'
+                }`}
+            >
+              አማርኛ (Amharic)
+            </button>
+          </div>
+
+          {/* Aspect Switcher */}
+          <div className="inline-flex items-center bg-[#111114] p-1 rounded-lg border border-white/10">
+            <button
+              type="button"
+              onClick={() => setAspectRatio('16x9')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${aspectRatio === '16x9'
+                  ? 'bg-zinc-800 text-zinc-100 border border-white/10'
+                  : 'text-zinc-400 hover:text-zinc-200'
+                }`}
+            >
+              <Monitor className="w-3.5 h-3.5" />
+              <span>16:9 Master</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setAspectRatio('9x16')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${aspectRatio === '9x16'
+                  ? 'bg-zinc-800 text-zinc-100 border border-white/10'
+                  : 'text-zinc-400 hover:text-zinc-200'
+                }`}
+            >
+              <Smartphone className="w-3.5 h-3.5" />
+              <span>9:16 Vertical</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setAspectRatio('radio_cut')}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${aspectRatio === 'radio_cut'
+                  ? 'bg-zinc-800 text-zinc-100 border border-white/10'
+                  : 'text-zinc-400 hover:text-zinc-200'
+                }`}
+            >
+              <Radio className="w-3.5 h-3.5" />
+              <span>Radio Cut</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -179,12 +228,12 @@ export const CinemaScreening: React.FC<CinemaScreeningProps> = ({
                       className="w-full h-full object-cover bg-black"
                       src={videoSrc}
                     >
-                      {outputs.files?.['subtitles.srt'] && (
+                      {outputs.files?.[srtRelPath] && (
                         <track
                           label="English"
                           kind="subtitles"
                           srcLang="en"
-                          src={getMediaUrl('subtitles.srt')}
+                          src={getMediaUrl(srtRelPath)}
                           default
                         />
                       )}
@@ -206,12 +255,12 @@ export const CinemaScreening: React.FC<CinemaScreeningProps> = ({
                   className="w-full h-full object-contain bg-black"
                   src={videoSrc}
                 >
-                  {outputs.files?.['subtitles.srt'] && (
+                  {outputs.files?.[srtRelPath] && (
                     <track
                       label="English"
                       kind="subtitles"
                       srcLang="en"
-                      src={getMediaUrl('subtitles.srt')}
+                      src={getMediaUrl(srtRelPath)}
                       default
                     />
                   )}
@@ -250,11 +299,10 @@ export const CinemaScreening: React.FC<CinemaScreeningProps> = ({
                     type="button"
                     onClick={() => setCurrentShotIndex(idx)}
                     title={`${shot.shot_id} — ${shot.subtitle_en}`}
-                    className={`group relative aspect-video rounded-md overflow-hidden border text-left transition-all ${
-                      isSelected
+                    className={`group relative aspect-video rounded-md overflow-hidden border text-left transition-all ${isSelected
                         ? 'border-amber-500 ring-1 ring-amber-500/30 bg-zinc-900'
                         : 'border-white/10 bg-[#111114] hover:border-white/25'
-                    }`}
+                      }`}
                   >
                     {hasKeyframe ? (
                       <img
@@ -265,9 +313,8 @@ export const CinemaScreening: React.FC<CinemaScreeningProps> = ({
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-zinc-900/70">
                         <span
-                          className={`font-mono text-xs ${
-                            isSelected ? 'text-amber-400 font-semibold' : 'text-zinc-500'
-                          }`}
+                          className={`font-mono text-xs ${isSelected ? 'text-amber-400 font-semibold' : 'text-zinc-500'
+                            }`}
                         >
                           {shotNum}
                         </span>
@@ -284,7 +331,7 @@ export const CinemaScreening: React.FC<CinemaScreeningProps> = ({
 
           <div className="flex items-center justify-between text-xs text-zinc-500 pt-1">
             <span>Audio spec: Sidechain ducking · Dual-pass -14 LUFS / -1.0 dB TP</span>
-            <span className="font-mono">{storyboard.total_duration_sec}s contract + 3s AI slate</span>
+            <span className="font-mono">3s intro + {storyboard.total_duration_sec}s contract + 3s AI slate</span>
           </div>
         </div>
 
@@ -304,34 +351,56 @@ export const CinemaScreening: React.FC<CinemaScreeningProps> = ({
               {currentShot.shot_type.replace(/_/g, ' ')}
             </div>
 
-            <div className="space-y-1.5">
-              <div className="text-[11px] uppercase tracking-wider text-zinc-500">
-                Amharic Narration
-              </div>
-              <p className="font-ethiopic text-lg leading-[1.85] text-zinc-100 font-normal">
-                {currentShot.narration_am}
-              </p>
-            </div>
-
-            <div className="space-y-1.5">
-              <div className="text-[11px] uppercase tracking-wider text-zinc-500">
-                English Subtitle
-              </div>
-              <p className="text-sm text-zinc-300 leading-relaxed">
-                “{currentShot.subtitle_en}”
-              </p>
-            </div>
+            {selectedLang === 'en' ? (
+              <>
+                <div className="space-y-1.5">
+                  <div className="text-[11px] uppercase tracking-wider text-amber-400/90">
+                    English Narration (Primary)
+                  </div>
+                  <p className="text-base leading-relaxed text-zinc-100 font-normal">
+                    {currentShot.narration_en || currentShot.subtitle_en}
+                  </p>
+                </div>
+                <div className="space-y-1.5">
+                  <div className="text-[11px] uppercase tracking-wider text-zinc-500">
+                    Amharic Version
+                  </div>
+                  <p className="font-ethiopic text-sm leading-[1.8] text-zinc-400">
+                    {currentShot.narration_am}
+                  </p>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="space-y-1.5">
+                  <div className="text-[11px] uppercase tracking-wider text-amber-400/90">
+                    Amharic Narration
+                  </div>
+                  <p className="font-ethiopic text-lg leading-[1.85] text-zinc-100 font-normal">
+                    {currentShot.narration_am}
+                  </p>
+                </div>
+                <div className="space-y-1.5">
+                  <div className="text-[11px] uppercase tracking-wider text-zinc-500">
+                    English Subtitle
+                  </div>
+                  <p className="text-sm text-zinc-300 leading-relaxed">
+                    “{currentShot.subtitle_en}”
+                  </p>
+                </div>
+              </>
+            )}
 
             {shotHasNarration && (
               <div className="pt-2 border-t border-white/10">
                 <div className="flex items-center gap-2 text-[11px] text-zinc-400 mb-2">
                   <Volume2 className="w-3.5 h-3.5 text-amber-500" />
-                  <span>Shot Audio Stem ({currentShot.shot_id}.wav)</span>
+                  <span>Shot Audio Stem ({selectedLang.toUpperCase()} · {currentShot.shot_id}.wav)</span>
                 </div>
                 <audio
-                  key={currentShot.shot_id}
+                  key={`${selectedLang}-${currentShot.shot_id}`}
                   controls
-                  src={getMediaUrl(`narration/${currentShot.shot_id}.wav`)}
+                  src={shotAudioSrc}
                   className="w-full h-8"
                 />
               </div>

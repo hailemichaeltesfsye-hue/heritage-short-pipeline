@@ -12,12 +12,14 @@ Production-grade, multi-agent AI filmmaking orchestrator producing the autobiogr
 - **Kaggle Wan 2.2 & HunyuanVideo Runner**: Ready-to-upload GPU scripts (`kaggle/wan22_i2v_runner.py` / `.ipynb`) executing `Wan 2.2 TI2V-5B` image-to-video at 480p 24fps using concise `motion_prompt`s.
 - **Deterministic Ken Burns Fallback**: Varied-direction FFmpeg `zoompan` motion shots (pan left/right, push-in, tilt, zoom-out) automatically generated when raw clips are absent.
 - **Kaggle ACE-Step 1.5 Underscore**: Generates 3 candidate Ethiopian highland acoustic scores (`outputs/music/`), normalized with gentle in/out fades.
-- **Mastered Dual-Aspect Exports**:
-  - Dynamic visual duration adjustment (+0.5s breathing room) preventing narration cutoff.
-  - Subtitle constraints strictly enforced: `max 2 lines`, `max 40 chars/line`.
-  - FFmpeg `sidechaincompress` audio ducking with two-pass `-14 LUFS` and `-1.0 dB TP` loudnorm.
-  - 3-second visible AI end card: *"Made with AI — Story, pipeline & Amharic narration by Hailemichael Tesfaye"*.
-  - Dual deliverables: `outputs/final_16x9.mp4` and `outputs/final_9x16.mp4`.
+- **Mastered Dual-Aspect, Dual-Language Exports**:
+  - **English Primary & Amharic Optional Narration**: Supports `--language en` (default primary), `am`, or `both` into isolated `outputs/narration/{en,am}/` caches, plus optional human-recorded overrides (`outputs/narration_recorded/{lang}/{shot_id}.{wav,mp3,m4a}`).
+  - **3-Second Classical Opening Title Card**: Prepended obsidian (`#0b0a09`) gold-bordered serif title card (`"HULUM NEGER LEBEGO NEW"` / `"ሁሉም ነገር ለበጎ ነው"`) with `0.5s` fades, `+3.0s` narration & subtitle synchronization, and underscore fade-in.
+  - Dynamic visual duration adjustment (+0.5s breathing room) keeping runtime (`3s intro + 10 shots + 3s AI slate`) strictly within `60.0–90.0s`.
+  - Crisp English subtitles (`max 2 lines`, `max 40 chars/line`) burned directly inside safe screen margins alongside external `.srt`.
+  - FFmpeg `sidechaincompress` audio ducking with `-14 LUFS` and `-1.0 dB TP` loudnorm.
+  - 3-second visible AI end card: *"Made with AI — Story, pipeline & dual-language narration by Hailemichael Tesfaye"*.
+  - Deliverables: English primary (`outputs/final_16x9.mp4`, `outputs/final_9x16.mp4`, `outputs/radio_cut.mp4`) and Amharic (`outputs/final_16x9_am.mp4`, `outputs/final_9x16_am.mp4`).
 - **Single-Shot SHA-256 Cache**: Per-shot manifest (`outputs/.cache_manifest.json`) across narration, keyframes, and video.
 - **Custom MCP Server**: Real tools (`validate_storyboard`, `regenerate_shot`, `get_pipeline_metrics`) using `mcp.server.mcpserver`.
 - **Strict Ethical AI Governance**: Verifies `ETHICS.md` self-consent records and protects family privacy.
@@ -135,14 +137,14 @@ uv run python -m pipeline.run --dry-run
 # Keyframe generation only
 uv run python -m pipeline.run --stage keyframes
 
-# Narration generation only
-uv run python -m pipeline.run --stage narration
+# Narration generation only (English primary, Amharic optional, or both)
+uv run python -m pipeline.run run --stage narration --language both
 
 # Audio & score mastering only
-uv run python -m pipeline.run --stage music
+uv run python -m pipeline.run run --stage music
 
-# Assembly and final rendering
-uv run python -m pipeline.run --stage assemble
+# Assembly and final rendering (English primary + Amharic optional)
+uv run python -m pipeline.run run --stage assemble --language both
 
 # Single shot targeted regeneration
 uv run python -m pipeline.run --shot shot_04 --force

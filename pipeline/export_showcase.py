@@ -1,7 +1,7 @@
 """Export showcase data bundle for standalone static frontend deployment.
 
 Packages storyboard.json, metrics, docs, media availability manifest, and real
-media assets into frontend/public/showcase-data/ cleanly.
+dual-language media assets into frontend/public/showcase-data/ cleanly.
 """
 
 from __future__ import annotations
@@ -52,9 +52,13 @@ def export_showcase_bundle() -> Path:
     media_files_to_copy = [
         "final_16x9.mp4",
         "final_9x16.mp4",
+        "final_16x9_am.mp4",
+        "final_9x16_am.mp4",
         "radio_cut.mp4",
         "subtitles.srt",
+        "subtitles_am.srt",
         "audio_master_mixed.wav",
+        "audio_master_mixed_am.wav",
         "music/score_normalized.wav",
         "reference/character_sheet.png",
     ]
@@ -79,22 +83,28 @@ def export_showcase_bundle() -> Path:
                 shutil.copyfile(img, keyframes_dst / img.name)
                 keyframes_available.append(img.stem)
 
-    narration_available: list[str] = []
-    narration_src = OUTPUTS_DIR / "narration"
-    if narration_src.exists():
-        narration_dst = media_dir / "narration"
-        narration_dst.mkdir(parents=True, exist_ok=True)
-        for wav in sorted(narration_src.glob("*.wav")):
-            if wav.stat().st_size > 0:
-                shutil.copyfile(wav, narration_dst / wav.name)
-                narration_available.append(wav.stem)
+    def _copy_wavs(src_dir: Path, dst_dir: Path) -> list[str]:
+        found: list[str] = []
+        if src_dir.exists():
+            dst_dir.mkdir(parents=True, exist_ok=True)
+            for wav in sorted(src_dir.glob("*.wav")):
+                if wav.stat().st_size > 0:
+                    shutil.copyfile(wav, dst_dir / wav.name)
+                    found.append(wav.stem)
+        return found
+
+    narration_en = _copy_wavs(OUTPUTS_DIR / "narration" / "en", media_dir / "narration" / "en")
+    narration_am = _copy_wavs(OUTPUTS_DIR / "narration" / "am", media_dir / "narration" / "am")
+    narration_legacy = _copy_wavs(OUTPUTS_DIR / "narration", media_dir / "narration")
 
     with open(FRONTEND_PUBLIC_DIR / "outputs.json", "w", encoding="utf-8") as f:
         json.dump(
             {
                 "files": available,
                 "keyframes": keyframes_available,
-                "narration": narration_available,
+                "narration": narration_en or narration_am or narration_legacy,
+                "narration_en": narration_en,
+                "narration_am": narration_am,
             },
             f,
             indent=2,

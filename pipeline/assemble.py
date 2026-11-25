@@ -1,4 +1,4 @@
-"""Full dual-aspect video assembly, audio ducking, loudnorm, and AI end card appending."""
+"""Full dual-aspect video assembly, classical title intro card, burned subtitles, ducking & loudnorm."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ import time
 from typing import Any, Dict, List, Optional, Tuple
 from PIL import Image, ImageDraw, ImageFont
 
-from pipeline.ffmpeg_utils import compute_wav_rms, get_audio_duration, run_ffmpeg
+from pipeline.ffmpeg_utils import compute_wav_rms, create_silence_wav, get_audio_duration, run_ffmpeg
 import pipeline.keyframes as keyframes_mod
 from pipeline.logger import log_run
 import pipeline.music as music_mod
@@ -22,6 +22,9 @@ OUTPUTS_NARRATION_DIR = Path("outputs/narration")
 OUTPUTS_SHOTS_DIR = Path("outputs/shots")
 OUTPUTS_KEYFRAMES_DIR = Path("outputs/keyframes")
 OUTPUTS_CLIPS_RAW_DIR = Path("outputs/clips_raw")
+
+INTRO_CARD_DURATION_SEC = 3.0
+END_CARD_DURATION_SEC = 3.0
 
 
 def wrap_subtitle_text(text: str, max_chars_per_line: int = 40, max_lines: int = 2) -> str:
@@ -38,6 +41,7 @@ def wrap_subtitle_text(text: str, max_chars_per_line: int = 40, max_lines: int =
 
 def format_srt_timestamp(seconds: float) -> str:
     """Convert floating point seconds into SRT timecode HH:MM:SS,mmm."""
+    seconds = max(0.0, seconds)
     hours = int(seconds // 3600)
     minutes = int((seconds % 3600) // 60)
     secs = int(seconds % 60)
@@ -48,15 +52,39 @@ def format_srt_timestamp(seconds: float) -> str:
     return f"{hours:02d}:{minutes:02d}:{secs:02d},{millis:03d}"
 
 
+def _resolve_narration_lang_dir(language: str, narration_dir: Optional[Path] = None) -> Path:
+    """Resolve the narration directory for a given language cleanly across live and test contexts."""
+    lang = language.lower()
+    if narration_dir is not None:
+        base = Path(narration_dir)
+        if base.name in ("am", "en"):
+            return base
+        return base / lang
+
+    # Check if OUTPUTS_NARRATION_EN_DIR / AM_DIR was explicitly monkeypatched in tests
+    lang_dir = (
+        narration_mod.OUTPUTS_NARRATION_EN_DIR
+        if lang == "en"
+        else narration_mod.OUTPUTS_NARRATION_AM_DIR
+    )
+    if str(lang_dir).replace("\\", "/") != f"outputs/narration/{lang}":
+        return lang_dir
+
+    # Check if assemble_mod.OUTPUTS_NARRATION_DIR was monkeypatched
+    return OUTPUTS_NARRATION_DIR / lang
+
+
 def calculate_dynamic_shot_durations(
     shots: List[Dict[str, Any]],
     narration_dir: Optional[Path] = None,
     breathing_room_sec: float = 0.5,
+    intro_duration_sec: float = INTRO_CARD_DURATION_SEC,
+    end_duration_sec: float = END_CARD_DURATION_SEC,
 ) -> Tuple[List[float], float]:
-    """Dynamically adjust shot durations based on actual Amharic narration audio lengths.
+    """Dynamically adjust shot durations based on actual narration audio lengths.
 
     Ensures narration is never clipped (+0.5s breathing room) while keeping total
-    film runtime strictly within [60.0, 90.0] seconds (including 3s AI end card).
+    film runtime (3s intro + 10 shots + 3s AI end card) strictly within [60.0, 90.0] seconds.
     """
     resolved_narr_dir = Path(narration_dir) if narration_dir is not None else OUTPUTS_NARRATION_DIR
     adjusted_durations: List[float] = []
@@ -70,28 +98,32 @@ def calculate_dynamic_shot_durations(
         needed_dur = max(contract_dur, actual_audio_dur + breathing_room_sec)
         adjusted_durations.append(needed_dur)
 
+    overhead = intro_duration_sec + end_duration_sec
     shots_total = sum(adjusted_durations)
-    total_film = shots_total + 3.0
+    total_film = shots_total + overhead
 
     if total_film > 88.0:
-        factor = (85.0 - 3.0) / shots_total
+        target_shots = 84.0 - overhead
+        factor = target_shots / shots_total
         adjusted_durations = [round(d * factor, 2) for d in adjusted_durations]
     elif total_film < 60.0:
-        factor = (65.0 - 3.0) / shots_total
+        target_shots = 66.0 - overhead
+        factor = target_shots / shots_total
         adjusted_durations = [round(d * factor, 2) for d in adjusted_durations]
 
-    return adjusted_durations, sum(adjusted_durations) + 3.0
+    return adjusted_durations, round(sum(adjusted_durations) + overhead, 2)
 
 
 def generate_clean_subtitles_srt(
     shots: List[Dict[str, Any]],
     shot_durations: List[float],
     output_path: Optional[Path] = None,
+    time_offset_sec: float = INTRO_CARD_DURATION_SEC,
 ) -> Path:
-    """Generate clean SubRip subtitles respecting <= 40 chars/line and <= 2 lines."""
+    """Generate clean SubRip subtitles offset by intro duration, respecting <= 40 chars/line and <= 2 lines."""
     resolved_path = Path(output_path) if output_path is not None else (OUTPUTS_DIR / "subtitles.srt")
     resolved_path.parent.mkdir(parents=True, exist_ok=True)
-    current_time = 0.0
+    current_time = float(time_offset_sec)
 
     lines: List[str] = []
     for i, (shot, duration) in enumerate(zip(shots, shot_durations), 1):
@@ -134,18 +166,177 @@ def _load_end_card_font(size: int) -> ImageFont.FreeTypeFont | ImageFont.ImageFo
         return ImageFont.load_default()
 
 
+def _load_classical_serif_font(size: int, bold: bool = False) -> ImageFont.FreeTypeFont | ImageFont.ImageFont:
+    """Load a classical serif font (Georgia / Times) for cinema opening title card."""
+    candidates = (
+        [
+            "C:/Windows/Fonts/georgiab.ttf",
+            "C:/Windows/Fonts/timesbd.ttf",
+            "C:/Windows/Fonts/georgia.ttf",
+            "C:/Windows/Fonts/times.ttf",
+            "/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf",
+            "C:/Windows/Fonts/ebrima.ttf",
+        ]
+        if bold
+        else [
+            "C:/Windows/Fonts/georgia.ttf",
+            "C:/Windows/Fonts/times.ttf",
+            "C:/Windows/Fonts/georgiai.ttf",
+            "/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf",
+            "C:/Windows/Fonts/ebrima.ttf",
+        ]
+    )
+    for path in candidates:
+        if os.path.exists(path):
+            try:
+                return ImageFont.truetype(path, size=size)
+            except Exception:
+                continue
+    return _load_end_card_font(size)
+
+
+def render_title_intro_card_video(
+    output_path: Path,
+    width: int = 1920,
+    height: int = 1080,
+    duration_sec: float = INTRO_CARD_DURATION_SEC,
+    fps: int = 24,
+) -> Path:
+    """Render a 3.0-second Classical Film Opening Title Intro Card with ornamental gold borders & fade."""
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    card_png = output_path.parent / f"intro_card_{width}x{height}.png"
+
+    # Deep obsidian-warm charcoal (#0b0a09)
+    img = Image.new("RGB", (width, height), color=(11, 10, 9))
+    draw = ImageDraw.Draw(img)
+
+    is_landscape = width >= 1200
+    outer_pad = 64 if is_landscape else 48
+    inner_pad = outer_pad + (18 if is_landscape else 14)
+
+    gold_bright = (212, 175, 55)   # #d4af37
+    gold_muted = (154, 123, 44)    # #9a7b2c
+    ivory_text = (245, 240, 230)
+    warm_silver = (205, 198, 185)
+
+    # Double ornamental classical borders
+    draw.rectangle(
+        [outer_pad, outer_pad, width - outer_pad, height - outer_pad],
+        outline=gold_bright,
+        width=3,
+    )
+    draw.rectangle(
+        [inner_pad, inner_pad, width - inner_pad, height - inner_pad],
+        outline=gold_muted,
+        width=1,
+    )
+
+    # Subtle corner flourishes (ornamental L-brackets & corner diamonds)
+    fl = 28 if is_landscape else 20
+    c_off = outer_pad - 6
+    corners = [
+        (c_off, c_off, 1, 1),
+        (width - c_off, c_off, -1, 1),
+        (c_off, height - c_off, 1, -1),
+        (width - c_off, height - c_off, -1, -1),
+    ]
+    for cx_c, cy_c, dx, dy in corners:
+        draw.line([(cx_c, cy_c), (cx_c + dx * fl, cy_c)], fill=gold_bright, width=2)
+        draw.line([(cx_c, cy_c), (cx_c, cy_c + dy * fl)], fill=gold_bright, width=2)
+        ix = cx_c + dx * (fl // 2 + 6)
+        iy = cy_c + dy * (fl // 2 + 6)
+        d = 4
+        draw.polygon([(ix, iy - d), (ix + d, iy), (ix, iy + d), (ix - d, iy)], fill=gold_bright)
+
+    cx, cy = width // 2, height // 2
+
+    header_font = _load_classical_serif_font(22 if is_landscape else 18, bold=False)
+    title_font = _load_classical_serif_font(64 if is_landscape else 42, bold=True)
+    amharic_font = _load_end_card_font(44 if is_landscape else 34)
+    meaning_font = _load_classical_serif_font(28 if is_landscape else 22, bold=False)
+    author_font = _load_classical_serif_font(22 if is_landscape else 18, bold=False)
+
+    # Small cinema header
+    draw.text(
+        (cx, cy - (155 if is_landscape else 170)),
+        "A   H E R I T A G E   S H O R T   F I L M",
+        font=header_font,
+        fill=gold_bright,
+        anchor="mm",
+    )
+
+    # Prominent classical serif title
+    draw.text(
+        (cx, cy - (72 if is_landscape else 85)),
+        "HULUM NEGER LEBEGO NEW",
+        font=title_font,
+        fill=ivory_text,
+        anchor="mm",
+    )
+
+    # Amharic subtitle
+    draw.text(
+        (cx, cy + (12 if is_landscape else -5)),
+        "ሁሉም ነገር ለበጎ ነው",
+        font=amharic_font,
+        fill=gold_bright,
+        anchor="mm",
+    )
+
+    # Ornamental divider
+    div_half = 140 if is_landscape else 100
+    div_y = cy + (64 if is_landscape else 50)
+    draw.line([(cx - div_half, div_y), (cx + div_half, div_y)], fill=gold_muted, width=2)
+
+    # English subtitle & Director attribution
+    draw.text(
+        (cx, cy + (106 if is_landscape else 94)),
+        "Everything Happens for Good",
+        font=meaning_font,
+        fill=warm_silver,
+        anchor="mm",
+    )
+    draw.text(
+        (cx, cy + (164 if is_landscape else 155)),
+        "By Hailemichael Tesfaye",
+        font=author_font,
+        fill=gold_muted,
+        anchor="mm",
+    )
+
+    img.save(str(card_png), "PNG")
+
+    fade_dur = min(0.5, duration_sec / 3.0)
+    fade_out_start = max(0.0, duration_sec - fade_dur)
+    vf = f"fps={fps},format=yuv420p,fade=t=in:st=0:d={fade_dur:.2f},fade=t=out:st={fade_out_start:.2f}:d={fade_dur:.2f}"
+
+    cmd = [
+        "-loop", "1",
+        "-i", str(card_png),
+        "-t", str(duration_sec),
+        "-vf", vf,
+        "-c:v", "libx264",
+        "-pix_fmt", "yuv420p",
+        "-y", str(output_path),
+    ]
+    ret, _, stderr = run_ffmpeg(cmd)
+    if ret != 0 or not output_path.exists():
+        raise RuntimeError(f"Failed rendering title intro card {output_path}: {stderr}")
+    return output_path
+
+
 def render_ai_end_card_video(
     output_path: Path,
     width: int = 1920,
     height: int = 1080,
-    duration_sec: float = 3.0,
+    duration_sec: float = END_CARD_DURATION_SEC,
     fps: int = 24,
 ) -> Path:
     """Generate a clean 3-second visible AI disclosure end card video via PIL + FFmpeg."""
     output_path.parent.mkdir(parents=True, exist_ok=True)
     card_png = output_path.parent / f"end_card_{width}x{height}.png"
 
-    img = Image.new("RGB", (width, height), color=(9, 9, 11))
+    img = Image.new("RGB", (width, height), color=(11, 10, 9))
     draw = ImageDraw.Draw(img)
 
     title_font = _load_end_card_font(54 if width >= 1200 else 44)
@@ -153,12 +344,12 @@ def render_ai_end_card_video(
     sub_font = _load_end_card_font(28 if width >= 1200 else 22)
 
     cx, cy = width // 2, height // 2
-    draw.rectangle([cx - 120, cy - 30, cx + 120, cy - 27], fill=(217, 119, 6))
+    draw.rectangle([cx - 120, cy - 30, cx + 120, cy - 27], fill=(212, 175, 55))
 
-    draw.text((cx, cy - 88), "Made with AI", font=title_font, fill=(244, 244, 245), anchor="mm")
+    draw.text((cx, cy - 88), "Made with AI", font=title_font, fill=(245, 240, 230), anchor="mm")
     draw.text(
         (cx, cy + 28),
-        "Story, pipeline & Amharic narration by Hailemichael Tesfaye",
+        "Story, pipeline & dual-language narration by Hailemichael Tesfaye",
         font=desc_font,
         fill=(212, 212, 216),
         anchor="mm",
@@ -167,7 +358,7 @@ def render_ai_end_card_video(
         (cx, cy + 84),
         "Hulum Neger Lebego New (ሁሉም ነገር ለበጎ ነው)",
         font=sub_font,
-        fill=(245, 158, 11),
+        fill=(212, 175, 55),
         anchor="mm",
     )
 
@@ -177,7 +368,7 @@ def render_ai_end_card_video(
         "-loop", "1",
         "-i", str(card_png),
         "-t", str(duration_sec),
-        "-vf", f"fps={fps},format=yuv420p",
+        "-vf", f"fps={fps},format=yuv420p,fade=t=in:st=0:d=0.4",
         "-c:v", "libx264",
         "-pix_fmt", "yuv420p",
         "-y", str(output_path),
@@ -194,22 +385,44 @@ def mix_audio_with_ducking_and_loudnorm(
     total_film_duration: float,
     output_master_audio: Optional[Path] = None,
     trace_id: Optional[str] = None,
+    intro_duration_sec: float = INTRO_CARD_DURATION_SEC,
+    end_duration_sec: float = END_CARD_DURATION_SEC,
 ) -> Path:
-    """Mix Amharic narration with sidechain ducked score and -14 LUFS loudnorm."""
+    """Mix timed narration (offset by intro silence) with sidechain-ducked score & -14 LUFS loudnorm."""
     resolved_master = Path(output_master_audio) if output_master_audio is not None else (OUTPUTS_DIR / "audio_master_mixed.wav")
     resolved_master.parent.mkdir(parents=True, exist_ok=True)
     start_time = time.time()
 
-    narration_concat = resolved_master.parent / "narration_timed.wav"
+    narration_concat = resolved_master.parent / f"{resolved_master.stem}_narr_timed.wav"
     filter_inputs: List[str] = []
     filter_segments: List[str] = []
+    stream_labels: List[str] = []
+
+    idx = 0
+    if intro_duration_sec > 0.0:
+        intro_silence = resolved_master.parent / "intro_silence.wav"
+        create_silence_wav(intro_silence, duration_sec=intro_duration_sec)
+        filter_inputs.extend(["-i", str(intro_silence)])
+        filter_segments.append(f"[{idx}:a]aresample=24000,atrim=0:{intro_duration_sec}[aintro];")
+        stream_labels.append("[aintro]")
+        idx += 1
 
     for i, (narr_path, dur) in enumerate(zip(narration_paths, shot_durations)):
         filter_inputs.extend(["-i", str(narr_path)])
-        filter_segments.append(f"[{i}:a]aresample=24000,apad=pad_dur={dur},atrim=0:{dur}[a{i}];")
+        filter_segments.append(f"[{idx}:a]aresample=24000,apad=pad_dur={dur},atrim=0:{dur}[a{i}];")
+        stream_labels.append(f"[a{i}]")
+        idx += 1
 
-    concat_str = "".join(f"[a{i}]" for i in range(len(narration_paths)))
-    filter_complex = f"{''.join(filter_segments)}{concat_str}concat=n={len(narration_paths)}:v=0:a=1[a_narr]"
+    if end_duration_sec > 0.0:
+        outro_silence = resolved_master.parent / "outro_silence.wav"
+        create_silence_wav(outro_silence, duration_sec=end_duration_sec)
+        filter_inputs.extend(["-i", str(outro_silence)])
+        filter_segments.append(f"[{idx}:a]aresample=24000,atrim=0:{end_duration_sec}[aoutro];")
+        stream_labels.append("[aoutro]")
+        idx += 1
+
+    concat_str = "".join(stream_labels)
+    filter_complex = f"{''.join(filter_segments)}{concat_str}concat=n={len(stream_labels)}:v=0:a=1[a_narr]"
 
     cmd_narr = filter_inputs + ["-filter_complex", filter_complex, "-map", "[a_narr]", "-y", str(narration_concat)]
     ret_nc, _, err_nc = run_ffmpeg(cmd_narr)
@@ -222,8 +435,11 @@ def mix_audio_with_ducking_and_loudnorm(
         trace_id=trace_id,
     )
 
+    # Gentle score fade-in during opening intro card, sidechain ducked when voice speaks, -14 LUFS loudnorm
+    fade_in_sec = min(2.0, max(0.5, intro_duration_sec))
     ducking_filter = (
-        "[1:a][0:a]sidechaincompress=threshold=0.02:ratio=6:attack=300:release=1500[ducked_score];"
+        f"[1:a]afade=t=in:st=0:d={fade_in_sec:.1f}[score_faded];"
+        "[score_faded][0:a]sidechaincompress=threshold=0.02:ratio=6:attack=300:release=1500[ducked_score];"
         "[0:a][ducked_score]amix=inputs=2:duration=first:dropout_transition=2[mixed_pre];"
         "[mixed_pre]loudnorm=I=-14:TP=-1.0:LRA=11[master]"
     )
@@ -256,7 +472,7 @@ def mix_audio_with_ducking_and_loudnorm(
         stage="audio_mastering",
         provider="ffmpeg",
         model="sidechaincompress-loudnorm",
-        parameters={"target_lufs": -14.0, "true_peak_db": -1.0},
+        parameters={"target_lufs": -14.0, "true_peak_db": -1.0, "intro_offset_sec": intro_duration_sec},
         latency_ms=latency_ms,
         status="success",
         trace_id=trace_id,
@@ -265,21 +481,35 @@ def mix_audio_with_ducking_and_loudnorm(
     return resolved_master
 
 
+def _escape_ffmpeg_subtitles_path(srt_path: Path) -> str:
+    """Escape SRT path for FFmpeg libass subtitles filter on Windows & POSIX."""
+    resolved = str(srt_path.resolve()).replace("\\", "/")
+    if len(resolved) >= 2 and resolved[1] == ":":
+        resolved = resolved[0] + "\\:" + resolved[2:]
+    return resolved
+
+
 def assemble_full_dual_aspect_pipeline(
     storyboard: Dict[str, Any],
     dry_run: bool = False,
     trace_id: Optional[str] = None,
+    language: str = "en",
 ) -> Tuple[Path, Path]:
-    """Execute complete assembly producing outputs/final_16x9.mp4 and outputs/final_9x16.mp4."""
+    """Assemble dual-aspect film with 3s Classical Intro Card, burned English subtitles, & AI end card.
+
+    Primary language ('en') -> outputs/final_16x9.mp4 & outputs/final_9x16.mp4 (+ radio_cut.mp4).
+    Secondary language ('am') -> outputs/final_16x9_am.mp4 & outputs/final_9x16_am.mp4.
+    """
+    lang = language.lower()
     shots = storyboard.get("shots", [])
     style_block = storyboard.get("style_block", {})
     out_dir = OUTPUTS_DIR
-    narr_dir = OUTPUTS_NARRATION_DIR
+    narr_dir = _resolve_narration_lang_dir(lang)
     shots_dir = OUTPUTS_SHOTS_DIR
     kf_dir = OUTPUTS_KEYFRAMES_DIR
     raw_clips_dir = OUTPUTS_CLIPS_RAW_DIR
 
-    # Step 1: Ensure every narration WAV exists and is non-silent when not dry_run
+    # Step 1: Ensure every narration WAV for this language exists and is non-silent when not dry_run
     for shot in shots:
         shot_id = shot["shot_id"]
         narr_wav = narr_dir / f"{shot_id}.wav"
@@ -289,18 +519,32 @@ def assemble_full_dual_aspect_pipeline(
 
         if needs_narr:
             ok, _, _, _ = narration_mod.generate_shot_narration(
-                shot, output_dir=narr_dir, dry_run=dry_run, trace_id=trace_id
+                shot, output_dir=narr_dir, dry_run=dry_run, trace_id=trace_id, language=lang
             )
             if not ok or not narr_wav.exists():
-                raise RuntimeError(f"Narration audio unavailable for {shot_id}")
+                raise RuntimeError(f"Narration audio ({lang}) unavailable for {shot_id}")
             if not dry_run and compute_wav_rms(narr_wav) < 0.001:
-                raise RuntimeError(f"Silent narration detected for {shot_id}; refusing to assemble")
+                raise RuntimeError(f"Silent narration ({lang}) detected for {shot_id}; refusing to assemble")
 
-    # Step 2: Dynamic durations driven by real narration audio
-    durations, total_film_duration = calculate_dynamic_shot_durations(shots, narration_dir=narr_dir)
+    # Step 2: Dynamic durations driven by real narration audio (+ 3s intro + 3s end card)
+    durations, total_film_duration = calculate_dynamic_shot_durations(
+        shots,
+        narration_dir=narr_dir,
+        intro_duration_sec=INTRO_CARD_DURATION_SEC,
+        end_duration_sec=END_CARD_DURATION_SEC,
+    )
 
-    # Step 3: Clean English subtitles
-    srt_path = generate_clean_subtitles_srt(shots, durations, out_dir / "subtitles.srt")
+    # Step 3: Clean English subtitles offset by +3.0s intro card duration
+    srt_filename = "subtitles.srt" if lang == "en" else "subtitles_am.srt"
+    srt_path = generate_clean_subtitles_srt(
+        shots,
+        durations,
+        out_dir / srt_filename,
+        time_offset_sec=INTRO_CARD_DURATION_SEC,
+    )
+    # Keep canonical outputs/subtitles.srt present as well
+    if lang != "en" and not (out_dir / "subtitles.srt").exists():
+        shutil.copyfile(srt_path, out_dir / "subtitles.srt")
 
     # Step 4: Prepare visual motion shots matching exact dynamic durations
     ordered_shots_video: List[Path] = []
@@ -334,41 +578,54 @@ def assemble_full_dual_aspect_pipeline(
 
         ordered_shots_video.append(shot_video_path)
 
-    # Step 5: Render 3s AI disclosure end cards for each aspect ratio
+    # Step 5: Render 3s Classical Opening Title Intro Cards & 3s AI End Cards
+    intro_card_16x9 = render_title_intro_card_video(out_dir / "intro_card_16x9.mp4", width=1920, height=1080)
+    intro_card_9x16 = render_title_intro_card_video(out_dir / "intro_card_9x16.mp4", width=1080, height=1920)
     end_card_16x9 = render_ai_end_card_video(out_dir / "end_card_16x9.mp4", width=1920, height=1080)
     end_card_9x16 = render_ai_end_card_video(out_dir / "end_card_9x16.mp4", width=1080, height=1920)
 
-    # Step 6: Mastered audio with sidechain ducking & -14 LUFS loudnorm
+    # Step 6: Mastered audio with 3s intro silence, sidechain ducking & -14 LUFS loudnorm
+    master_audio_name = "audio_master_mixed.wav" if lang == "en" else f"audio_master_mixed_{lang}.wav"
     master_audio = mix_audio_with_ducking_and_loudnorm(
         narration_paths=narration_files,
         shot_durations=durations,
         total_film_duration=total_film_duration,
-        output_master_audio=out_dir / "audio_master_mixed.wav",
+        output_master_audio=out_dir / master_audio_name,
         trace_id=trace_id,
+        intro_duration_sec=INTRO_CARD_DURATION_SEC,
+        end_duration_sec=END_CARD_DURATION_SEC,
     )
 
-    # Step 7: Assemble 16:9 Cinema Master
-    concat_list_16x9 = out_dir / "concat_16x9.txt"
+    suffix = "" if lang == "en" else f"_{lang}"
+    final_16x9 = out_dir / f"final_16x9{suffix}.mp4"
+    final_9x16 = out_dir / f"final_9x16{suffix}.mp4"
+
+    escaped_srt = _escape_ffmpeg_subtitles_path(srt_path)
+
+    # Step 7: Assemble 16:9 Cinema Master with burned English subtitles
+    concat_list_16x9 = out_dir / f"concat_16x9{suffix}.txt"
     with open(concat_list_16x9, "w", encoding="utf-8") as f:
+        f.write(f"file '{intro_card_16x9.resolve().as_posix()}'\n")
         for v in ordered_shots_video:
             f.write(f"file '{v.resolve().as_posix()}'\n")
         f.write(f"file '{end_card_16x9.resolve().as_posix()}'\n")
 
-    final_16x9 = out_dir / "final_16x9.mp4"
+    sub_style_16x9 = (
+        "FontName=Arial,FontSize=15,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,"
+        "BackColour=&H80000000,BorderStyle=1,Outline=2,Shadow=1,MarginV=18,Alignment=2"
+    )
     cmd_16x9 = [
         "-f", "concat",
         "-safe", "0",
         "-i", str(concat_list_16x9),
         "-i", str(master_audio),
-        "-i", str(srt_path),
+        "-vf", f"subtitles='{escaped_srt}':force_style='{sub_style_16x9}'",
         "-c:v", "libx264",
         "-preset", "medium",
         "-crf", "20",
         "-pix_fmt", "yuv420p",
         "-c:a", "aac",
         "-b:a", "192k",
-        "-c:s", "mov_text",
-        "-metadata:s:s:0", "language=eng",
         "-shortest",
         "-y", str(final_16x9),
     ]
@@ -390,14 +647,13 @@ def assemble_full_dual_aspect_pipeline(
         if ret_fb16 != 0:
             raise RuntimeError(f"16:9 master assembly failed: {err_fb16}")
 
-    # Step 8: Assemble 9:16 Vertical Export sequentially (single decoder, zero memory spike)
-    final_9x16 = out_dir / "final_9x16.mp4"
-    concat_shots_only = out_dir / "concat_shots_only.txt"
+    # Step 8: Assemble 9:16 Vertical Export sequentially with intro card + burned subtitles
+    concat_shots_only = out_dir / f"concat_shots_only{suffix}.txt"
     with open(concat_shots_only, "w", encoding="utf-8") as f:
         for v in ordered_shots_video:
             f.write(f"file '{v.resolve().as_posix()}'\n")
 
-    shots_body_9x16 = out_dir / "shots_body_9x16.mp4"
+    shots_body_9x16 = out_dir / f"shots_body_9x16{suffix}.mp4"
     ret_body_9, _, err_body_9 = run_ffmpeg([
         "-f", "concat",
         "-safe", "0",
@@ -412,28 +668,48 @@ def assemble_full_dual_aspect_pipeline(
     if ret_body_9 != 0 or not shots_body_9x16.exists():
         raise RuntimeError(f"9:16 body crop encode failed: {err_body_9}")
 
-    concat_list_9x16 = out_dir / "concat_9x16.txt"
+    concat_list_9x16 = out_dir / f"concat_9x16{suffix}.txt"
     with open(concat_list_9x16, "w", encoding="utf-8") as f:
+        f.write(f"file '{intro_card_9x16.resolve().as_posix()}'\n")
         f.write(f"file '{shots_body_9x16.resolve().as_posix()}'\n")
         f.write(f"file '{end_card_9x16.resolve().as_posix()}'\n")
 
-    ret_9, _, err_9 = run_ffmpeg([
+    sub_style_9x16 = (
+        "FontName=Arial,FontSize=9,PrimaryColour=&H00FFFFFF,OutlineColour=&H00000000,"
+        "BackColour=&H80000000,BorderStyle=1,Outline=2,Shadow=1,MarginV=20,MarginL=16,MarginR=16,Alignment=2"
+    )
+    ret_9, _, _ = run_ffmpeg([
         "-f", "concat",
         "-safe", "0",
         "-i", str(concat_list_9x16),
         "-i", str(master_audio),
-        "-c:v", "copy",
+        "-vf", f"subtitles='{escaped_srt}':force_style='{sub_style_9x16}'",
+        "-c:v", "libx264",
+        "-preset", "medium",
+        "-crf", "21",
+        "-pix_fmt", "yuv420p",
         "-c:a", "aac",
         "-b:a", "192k",
         "-shortest",
         "-y", str(final_9x16),
     ])
-    if ret_9 != 0 or not final_9x16.exists():
-        raise RuntimeError(f"9:16 vertical export failed: {err_9}")
+    if ret_9 != 0:
+        ret_fb9, _, err_fb9 = run_ffmpeg([
+            "-f", "concat",
+            "-safe", "0",
+            "-i", str(concat_list_9x16),
+            "-i", str(master_audio),
+            "-c:v", "copy",
+            "-c:a", "aac",
+            "-b:a", "192k",
+            "-shortest",
+            "-y", str(final_9x16),
+        ])
+        if ret_fb9 != 0 or not final_9x16.exists():
+            raise RuntimeError(f"9:16 vertical export failed: {err_fb9}")
 
-    radio_cut = out_dir / "radio_cut.mp4"
-    if final_16x9.exists():
-        shutil.copyfile(final_16x9, radio_cut)
+    if lang == "en" and final_16x9.exists():
+        shutil.copyfile(final_16x9, out_dir / "radio_cut.mp4")
 
     return final_16x9, final_9x16
 

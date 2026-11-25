@@ -5,6 +5,7 @@ export interface Shot {
   visual_prompt: string;
   motion_prompt: string;
   narration_am: string;
+  narration_en?: string;
   subtitle_en: string;
   reason: string;
   seed: number;
@@ -41,6 +42,8 @@ export interface OutputsManifest {
   files: Record<string, boolean>;
   keyframes: string[];
   narration: string[];
+  narration_en?: string[];
+  narration_am?: string[];
 }
 
 export interface MetricsSummary {
@@ -85,3 +88,4 @@ export interface MetricsData {
 
 export type ViewMode = 'screening' | 'storyboard' | 'observability' | 'journals';
 export type AspectRatioMode = '16x9' | '9x16' | 'radio_cut';
+export type NarrationLanguage = 'en' | 'am';

@@ -16,6 +16,7 @@ def video_editor_node(state: PipelineState) -> Dict[str, Any]:
     """LangGraph node compiling full dual-aspect video with narration, score, and subtitles."""
     data = state.get("storyboard_data", {})
     dry_run = state.get("dry_run", False)
+    language = str(state.get("language", "en") or "en").lower()
     trace_id = state.get("trace_id")
     errors = list(state.get("errors", []))
     step_status = dict(state.get("step_status", {}))
@@ -25,6 +26,7 @@ def video_editor_node(state: PipelineState) -> Dict[str, Any]:
             storyboard=data,
             dry_run=dry_run,
             trace_id=trace_id,
+            language=language,
         )
         step_status["video_editor"] = "passed"
         log_run(

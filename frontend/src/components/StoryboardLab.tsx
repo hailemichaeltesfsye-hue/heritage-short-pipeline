@@ -24,6 +24,7 @@ export const StoryboardLab: React.FC<StoryboardLabProps> = ({
   const handleSelectShot = (shot: Shot) => {
     setSelectedShot(shot);
     setEditForm({
+      narration_en: shot.narration_en ?? shot.subtitle_en,
       narration_am: shot.narration_am,
       subtitle_en: shot.subtitle_en,
       visual_prompt: shot.visual_prompt,
@@ -47,7 +48,7 @@ export const StoryboardLab: React.FC<StoryboardLabProps> = ({
     try {
       await updateShot(selectedShot.shot_id, editForm);
       await triggerPipelineRun('keyframes', selectedShot.shot_id, false);
-      await triggerPipelineRun('narration', selectedShot.shot_id, false);
+      await triggerPipelineRun('narration', selectedShot.shot_id, false, 'both');
 
       setFeedback({
         type: 'success',
@@ -98,11 +99,10 @@ export const StoryboardLab: React.FC<StoryboardLabProps> = ({
                 key={shot.shot_id}
                 type="button"
                 onClick={() => handleSelectShot(shot)}
-                className={`text-left p-4 rounded-xl bg-[#111114] border transition-colors ${
-                  isSelected
-                    ? 'border-amber-500/80 ring-1 ring-amber-500/20'
-                    : 'border-white/10 hover:border-white/25'
-                }`}
+                className={`text-left p-4 rounded-xl bg-[#111114] border transition-colors ${isSelected
+                  ? 'border-amber-500/80 ring-1 ring-amber-500/20'
+                  : 'border-white/10 hover:border-white/25'
+                  }`}
               >
                 <div className="aspect-video rounded-lg overflow-hidden bg-[#09090b] border border-white/5 mb-3 relative flex items-center justify-center">
                   {hasKeyframe ? (
@@ -158,11 +158,10 @@ export const StoryboardLab: React.FC<StoryboardLabProps> = ({
 
           {feedback && (
             <div
-              className={`p-3 rounded-lg text-xs flex items-start gap-2 border ${
-                feedback.type === 'success'
-                  ? 'bg-emerald-950/40 text-emerald-300 border-emerald-800/60'
-                  : 'bg-rose-950/40 text-rose-300 border-rose-800/60'
-              }`}
+              className={`p-3 rounded-lg text-xs flex items-start gap-2 border ${feedback.type === 'success'
+                ? 'bg-emerald-950/40 text-emerald-300 border-emerald-800/60'
+                : 'bg-rose-950/40 text-rose-300 border-rose-800/60'
+                }`}
             >
               {feedback.type === 'success' ? (
                 <Check className="w-4 h-4 shrink-0 mt-0.5" />
@@ -176,10 +175,23 @@ export const StoryboardLab: React.FC<StoryboardLabProps> = ({
           <div className="space-y-4 text-xs">
             <div>
               <label className="block text-zinc-400 font-medium mb-1.5">
-                Amharic Narration (Gemini 3.8 / Edge-TTS)
+                English Narration — Primary (Edge-TTS AndrewMultilingual)
               </label>
               <textarea
                 rows={3}
+                disabled={!isLive}
+                value={editForm.narration_en ?? selectedShot.narration_en ?? selectedShot.subtitle_en}
+                onChange={(e) => setEditForm({ ...editForm, narration_en: e.target.value })}
+                className="w-full p-2.5 rounded-lg bg-[#09090b] border border-white/10 text-zinc-100 leading-relaxed focus:outline-none focus:border-amber-500/60 disabled:opacity-70"
+              />
+            </div>
+
+            <div>
+              <label className="block text-zinc-400 font-medium mb-1.5">
+                Amharic Narration — Optional (Gemini 3.8 / Edge-TTS)
+              </label>
+              <textarea
+                rows={2}
                 disabled={!isLive}
                 value={editForm.narration_am ?? selectedShot.narration_am}
                 onChange={(e) => setEditForm({ ...editForm, narration_am: e.target.value })}

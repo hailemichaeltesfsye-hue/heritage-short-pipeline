@@ -13,6 +13,7 @@ class PipelineState(TypedDict):
     storyboard_data: Dict[str, Any]
     dry_run: bool
     hitl: bool
+    language: str
     target_shot_id: Optional[str]
     force: bool
     stage: str

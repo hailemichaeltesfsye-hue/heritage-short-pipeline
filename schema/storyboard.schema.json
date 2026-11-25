@@ -117,6 +117,10 @@
             "type": "string",
             "minLength": 5
           },
+          "narration_en": {
+            "type": "string",
+            "minLength": 5
+          },
           "subtitle_en": {
             "type": "string",
             "minLength": 5

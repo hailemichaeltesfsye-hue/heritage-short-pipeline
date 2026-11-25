@@ -1,77 +1,85 @@
 {
   "summary": {
-    "total_runs": 49,
-    "total_latency_ms": 243897.66,
+    "total_runs": 153,
+    "total_latency_ms": 3190331.11,
     "total_cost_usd": 0.033,
-    "cache_hits": 10,
-    "cache_misses": 39,
-    "cache_hit_ratio": 0.2041,
-    "failures": 23
+    "cache_hits": 49,
+    "cache_misses": 104,
+    "cache_hit_ratio": 0.3203,
+    "failures": 55
   },
   "estimated_gpu_minutes": 0.0,
   "model_breakdown": {
-    "governance-checker": 1,
-    "director-rules": 1,
-    "supervisor-router": 1,
+    "governance-checker": 2,
+    "director-rules": 2,
+    "supervisor-router": 2,
     "@cf/black-forest-labs/flux-2-klein-4b": 11,
-    "flux-and-gemini-image": 1,
-    "am-ET-AmehaNeural": 11,
-    "cache-manifest": 10,
-    "ffmpeg-zoompan": 10,
-    "ffmpeg-ambient-fallback": 2,
-    "sidechaincompress-loudnorm": 1
+    "flux-and-gemini-image": 2,
+    "am-ET-AmehaNeural": 22,
+    "cache-manifest": 49,
+    "ffmpeg-zoompan": 20,
+    "ffmpeg-ambient-fallback": 11,
+    "sidechaincompress-loudnorm": 9,
+    "ffmpeg-dual-aspect-master": 2,
+    "en-US-AndrewMultilingualNeural": 20,
+    "am-ET-MekdesNeural": 1
   },
   "stage_breakdown": {
     "governance": {
-      "count": 1,
+      "count": 2,
       "total_latency_ms": 0.0,
       "total_cost_usd": 0.0
     },
     "director_validation": {
-      "count": 1,
+      "count": 2,
       "total_latency_ms": 0.0,
       "total_cost_usd": 0.0
     },
     "supervision": {
-      "count": 1,
+      "count": 2,
       "total_latency_ms": 0.0,
       "total_cost_usd": 0.0
     },
     "keyframes": {
-      "count": 21,
-      "total_latency_ms": 139619.38,
+      "count": 41,
+      "total_latency_ms": 139629.38,
       "total_cost_usd": 0.032999999999999995
     },
     "visual_compilation": {
-      "count": 1,
+      "count": 2,
       "total_latency_ms": 0.0,
       "total_cost_usd": 0.0
     },
     "narration": {
-      "count": 11,
-      "total_latency_ms": 70633.59,
+      "count": 62,
+      "total_latency_ms": 2932338.169999999,
       "total_cost_usd": 0.0
     },
     "motion_shot": {
-      "count": 10,
-      "total_latency_ms": 26000.04,
+      "count": 20,
+      "total_latency_ms": 54970.08,
       "total_cost_usd": 0.0
     },
     "music_score": {
-      "count": 2,
-      "total_latency_ms": 3558.01,
+      "count": 11,
+      "total_latency_ms": 26402.82,
       "total_cost_usd": 0.0
     },
     "audio_mastering": {
-      "count": 1,
-      "total_latency_ms": 4086.64,
+      "count": 9,
+      "total_latency_ms": 36990.659999999996,
+      "total_cost_usd": 0.0
+    },
+    "assembly_dual_aspect": {
+      "count": 2,
+      "total_latency_ms": 0.0,
       "total_cost_usd": 0.0
     }
   },
   "recent_runs": [
     {
-      "trace_id": "b1c2be57-be7b-4380-9b3f-c90d25815da6",
-      "timestamp_utc": "2026-11-24T20:55:33.127359+00:00",
+      "trace_id": "9a42d02c-7a84-46f7-92e0-018585921166",
+      "timestamp_utc": "2026-11-25T17:10:25.808488+00:00",
       "agent": "VideoEditorAgent",
       "stage": "audio_mastering",
       "shot_id": null,
@@ -79,562 +87,591 @@
       "model": "sidechaincompress-loudnorm",
       "parameters": {
         "target_lufs": -14.0,
-        "true_peak_db": -1.0
+        "true_peak_db": -1.0,
+        "intro_offset_sec": 3.0
       },
       "seed": null,
-      "latency_ms": 4086.64,
+      "latency_ms": 4370.35,
       "estimated_cost_usd": 0.0,
       "cache_hit": false,
       "status": "success",
       "error": null
     },
     {
-      "trace_id": "dd1514e8-0464-4cc3-b34e-69ea33aeffb2",
-      "timestamp_utc": "2026-11-24T20:55:30.990681+00:00",
+      "trace_id": "1c3908fe-cbf8-451b-b269-2c7a277a3be1",
+      "timestamp_utc": "2026-11-25T17:10:23.510311+00:00",
       "agent": "AudioVoiceAgent",
       "stage": "music_score",
       "shot_id": null,
       "provider": "ffmpeg",
       "model": "ffmpeg-ambient-fallback",
       "parameters": {
-        "total_duration_sec": 77.536,
+        "total_duration_sec": 81.59,
         "source": "outputs\\music\\score_synth.wav"
       },
       "seed": null,
-      "latency_ms": 1798.16,
+      "latency_ms": 1808.84,
       "estimated_cost_usd": 0.0,
       "cache_hit": false,
       "status": "fallback",
       "error": "outputs/music/score.wav missing; using temporary ambient harmonic fallback"
     },
     {
-      "trace_id": "a0caf4f0-562e-4f80-84c6-11e4f6d5a95f",
-      "timestamp_utc": "2026-11-24T20:54:53.234552+00:00",
+      "trace_id": "4092293d-cbce-433d-9c8a-80fee5e00f8e",
+      "timestamp_utc": "2026-11-25T17:08:25.476570+00:00",
+      "agent": "VideoEditorAgent",
+      "stage": "audio_mastering",
+      "shot_id": null,
+      "provider": "ffmpeg",
+      "model": "sidechaincompress-loudnorm",
+      "parameters": {
+        "target_lufs": -14.0,
+        "true_peak_db": -1.0,
+        "intro_offset_sec": 3.0
+      },
+      "seed": null,
+      "latency_ms": 4291.73,
+      "estimated_cost_usd": 0.0,
+      "cache_hit": false,
+      "status": "success",
+      "error": null
+    },
+    {
+      "trace_id": "16db5e70-55e1-4d69-8586-a07d93a4e6b0",
+      "timestamp_utc": "2026-11-25T17:08:23.311396+00:00",
       "agent": "AudioVoiceAgent",
       "stage": "music_score",
       "shot_id": null,
       "provider": "ffmpeg",
       "model": "ffmpeg-ambient-fallback",
       "parameters": {
-        "total_duration_sec": 74.0,
+        "total_duration_sec": 80.0,
         "source": "outputs\\music\\score_synth.wav"
       },
       "seed": null,
-      "latency_ms": 1759.85,
+      "latency_ms": 1859.43,
       "estimated_cost_usd": 0.0,
       "cache_hit": false,
       "status": "fallback",
       "error": "outputs/music/score.wav missing; using temporary ambient harmonic fallback"
     },
     {
-      "trace_id": "3e6cdfce-d559-478a-97f8-fca964c8475e",
-      "timestamp_utc": "2026-11-24T20:54:40.617626+00:00",
+      "trace_id": "d3c93699-2bdf-42e4-a420-5c7e8137c10c",
+      "timestamp_utc": "2026-11-25T17:03:45.860430+00:00",
       "agent": "VideoEditorAgent",
-      "stage": "motion_shot",
-      "shot_id": "shot_10",
-      "provider": "ffmpeg_ken_burns",
-      "model": "ffmpeg-zoompan",
+      "stage": "audio_mastering",
+      "shot_id": null,
+      "provider": "ffmpeg",
+      "model": "sidechaincompress-loudnorm",
       "parameters": {
-        "duration_sec": 6.0,
-        "shot_index": 10
+        "target_lufs": -14.0,
+        "true_peak_db": -1.0,
+        "intro_offset_sec": 3.0
       },
-      "seed": 10110,
-      "latency_ms": 2049.64,
+      "seed": null,
+      "latency_ms": 5428.09,
+      "estimated_cost_usd": 0.0,
+      "cache_hit": false,
+      "status": "success",
+      "error": null
+    },
+    {
+      "trace_id": "7254b2ff-f1e4-4a5a-a52a-d7c551b4e7ab",
+      "timestamp_utc": "2026-11-25T17:03:42.712289+00:00",
+      "agent": "AudioVoiceAgent",
+      "stage": "music_score",
+      "shot_id": null,
+      "provider": "ffmpeg",
+      "model": "ffmpeg-ambient-fallback",
+      "parameters": {
+        "total_duration_sec": 81.59,
+        "source": "outputs\\music\\score_synth.wav"
+      },
+      "seed": null,
+      "latency_ms": 1912.55,
       "estimated_cost_usd": 0.0,
       "cache_hit": false,
       "status": "fallback",
-      "error": "fallback: ken_burns (no raw Wan 2.2 clip in outputs/clips_raw/)"
+      "error": "outputs/music/score.wav missing; using temporary ambient harmonic fallback"
     },
     {
-      "trace_id": "fff69992-d1d9-4fa4-b2eb-f7bc9c294411",
-      "timestamp_utc": "2026-11-24T20:54:38.524818+00:00",
+      "trace_id": "c9d92957-d9d5-487a-be3a-9701d7b33101",
+      "timestamp_utc": "2026-11-25T17:01:49.148733+00:00",
       "agent": "VideoEditorAgent",
-      "stage": "motion_shot",
-      "shot_id": "shot_09",
-      "provider": "ffmpeg_ken_burns",
-      "model": "ffmpeg-zoompan",
+      "stage": "audio_mastering",
+      "shot_id": null,
+      "provider": "ffmpeg",
+      "model": "sidechaincompress-loudnorm",
       "parameters": {
-        "duration_sec": 8.0,
-        "shot_index": 9
+        "target_lufs": -14.0,
+        "true_peak_db": -1.0,
+        "intro_offset_sec": 3.0
       },
-      "seed": 10109,
-      "latency_ms": 2278.91,
+      "seed": null,
+      "latency_ms": 4193.58,
+      "estimated_cost_usd": 0.0,
+      "cache_hit": false,
+      "status": "success",
+      "error": null
+    },
+    {
+      "trace_id": "0dd5b4a2-be2e-46d1-b91f-8b72c7abbcee",
+      "timestamp_utc": "2026-11-25T17:01:47.048429+00:00",
+      "agent": "AudioVoiceAgent",
+      "stage": "music_score",
+      "shot_id": null,
+      "provider": "ffmpeg",
+      "model": "ffmpeg-ambient-fallback",
+      "parameters": {
+        "total_duration_sec": 80.0,
+        "source": "outputs\\music\\score_synth.wav"
+      },
+      "seed": null,
+      "latency_ms": 1810.83,
       "estimated_cost_usd": 0.0,
       "cache_hit": false,
       "status": "fallback",
-      "error": "fallback: ken_burns (no raw Wan 2.2 clip in outputs/clips_raw/)"
+      "error": "outputs/music/score.wav missing; using temporary ambient harmonic fallback"
     },
     {
-      "trace_id": "87e00ff0-717e-4184-ad81-416926baeb67",
-      "timestamp_utc": "2026-11-24T20:54:36.233876+00:00",
-      "agent": "VideoEditorAgent",
-      "stage": "motion_shot",
-      "shot_id": "shot_08",
-      "provider": "ffmpeg_ken_burns",
-      "model": "ffmpeg-zoompan",
-      "parameters": {
-        "duration_sec": 8.0,
-        "shot_index": 8
-      },
-      "seed": 10108,
-      "latency_ms": 2463.81,
-      "estimated_cost_usd": 0.0,
-      "cache_hit": false,
-      "status": "fallback",
-      "error": "fallback: ken_burns (no raw Wan 2.2 clip in outputs/clips_raw/)"
-    },
-    {
-      "trace_id": "ceef81dc-6d0f-4b7c-a651-13260ad97093",
-      "timestamp_utc": "2026-11-24T20:54:33.741825+00:00",
-      "agent": "VideoEditorAgent",
-      "stage": "motion_shot",
-      "shot_id": "shot_07",
-      "provider": "ffmpeg_ken_burns",
-      "model": "ffmpeg-zoompan",
-      "parameters": {
-        "duration_sec": 8.0,
-        "shot_index": 7
-      },
-      "seed": 10107,
-      "latency_ms": 2220.24,
-      "estimated_cost_usd": 0.0,
-      "cache_hit": false,
-      "status": "fallback",
-      "error": "fallback: ken_burns (no raw Wan 2.2 clip in outputs/clips_raw/)"
-    },
-    {
-      "trace_id": "f5f26b6d-ffcd-40bd-b5a7-14b9239e7f6c",
-      "timestamp_utc": "2026-11-24T20:54:31.497116+00:00",
-      "agent": "VideoEditorAgent",
-      "stage": "motion_shot",
-      "shot_id": "shot_06",
-      "provider": "ffmpeg_ken_burns",
-      "model": "ffmpeg-zoompan",
-      "parameters": {
-        "duration_sec": 8.0,
-        "shot_index": 6
-      },
-      "seed": 10106,
-      "latency_ms": 2577.61,
-      "estimated_cost_usd": 0.0,
-      "cache_hit": false,
-      "status": "fallback",
-      "error": "fallback: ken_burns (no raw Wan 2.2 clip in outputs/clips_raw/)"
-    },
-    {
-      "trace_id": "ca3f24ba-b625-4202-abf9-e939e5f645e8",
-      "timestamp_utc": "2026-11-24T20:54:28.898685+00:00",
-      "agent": "VideoEditorAgent",
-      "stage": "motion_shot",
-      "shot_id": "shot_05",
-      "provider": "ffmpeg_ken_burns",
-      "model": "ffmpeg-zoompan",
-      "parameters": {
-        "duration_sec": 8.0,
-        "shot_index": 5
-      },
-      "seed": 10105,
-      "latency_ms": 3397.04,
-      "estimated_cost_usd": 0.0,
-      "cache_hit": false,
-      "status": "fallback",
-      "error": "fallback: ken_burns (no raw Wan 2.2 clip in outputs/clips_raw/)"
-    },
-    {
-      "trace_id": "73075d62-e363-4758-b678-18f40eff7fdc",
-      "timestamp_utc": "2026-11-24T20:54:25.346627+00:00",
-      "agent": "VideoEditorAgent",
-      "stage": "motion_shot",
-      "shot_id": "shot_04",
-      "provider": "ffmpeg_ken_burns",
-      "model": "ffmpeg-zoompan",
-      "parameters": {
-        "duration_sec": 8.0,
-        "shot_index": 4
-      },
-      "seed": 10104,
-      "latency_ms": 2760.98,
-      "estimated_cost_usd": 0.0,
-      "cache_hit": false,
-      "status": "fallback",
-      "error": "fallback: ken_burns (no raw Wan 2.2 clip in outputs/clips_raw/)"
-    },
-    {
-      "trace_id": "ab0d8093-99a2-485e-ab08-6aa2807ee060",
-      "timestamp_utc": "2026-11-24T20:54:22.479879+00:00",
-      "agent": "VideoEditorAgent",
-      "stage": "motion_shot",
+      "trace_id": "25f5288b-6b17-4166-8ad6-348f1306000f",
+      "timestamp_utc": "2026-11-25T17:01:12.031379+00:00",
+      "agent": "AudioVoiceAgent",
+      "stage": "narration",
       "shot_id": "shot_03",
-      "provider": "ffmpeg_ken_burns",
-      "model": "ffmpeg-zoompan",
+      "provider": "edge-tts",
+      "model": "am-ET-AmehaNeural",
       "parameters": {
-        "duration_sec": 7.0,
-        "shot_index": 3
+        "duration_sec": 6.19,
+        "sample_rate": 24000,
+        "language": "am"
       },
       "seed": 10103,
-      "latency_ms": 2225.7,
+      "latency_ms": 6167.83,
       "estimated_cost_usd": 0.0,
       "cache_hit": false,
       "status": "fallback",
-      "error": "fallback: ken_burns (no raw Wan 2.2 clip in outputs/clips_raw/)"
+      "error": "models/gemini-3.8-flash error: 400 INVALID_ARGUMENT. {'error': {'code': 400, 'message': 'Manually set deadline 8s is too short. Minimum allowed deadline is 10s.', 'status': 'INVALID_ARGUMENT'}}"
     },
     {
-      "trace_id": "9a2df848-379b-406d-8062-23f640bf6a31",
-      "timestamp_utc": "2026-11-24T20:54:20.237141+00:00",
-      "agent": "VideoEditorAgent",
-      "stage": "motion_shot",
-      "shot_id": "shot_02",
-      "provider": "ffmpeg_ken_burns",
-      "model": "ffmpeg-zoompan",
-      "parameters": {
-        "duration_sec": 7.0,
-        "shot_index": 2
-      },
-      "seed": 10102,
-      "latency_ms": 2888.4,
-      "estimated_cost_usd": 0.0,
-      "cache_hit": false,
-      "status": "fallback",
-      "error": "fallback: ken_burns (no raw Wan 2.2 clip in outputs/clips_raw/)"
-    },
-    {
-      "trace_id": "3cbd3c37-c32f-486b-bcad-5e45631472bf",
-      "timestamp_utc": "2026-11-24T20:54:17.317858+00:00",
-      "agent": "VideoEditorAgent",
-      "stage": "motion_shot",
-      "shot_id": "shot_01",
-      "provider": "ffmpeg_ken_burns",
-      "model": "ffmpeg-zoompan",
-      "parameters": {
-        "duration_sec": 6.0,
-        "shot_index": 1
-      },
-      "seed": 10101,
-      "latency_ms": 3137.71,
-      "estimated_cost_usd": 0.0,
-      "cache_hit": false,
-      "status": "fallback",
-      "error": "fallback: ken_burns (no raw Wan 2.2 clip in outputs/clips_raw/)"
-    },
-    {
-      "trace_id": "10010f42-845d-400d-ba43-0692bdebeaea",
-      "timestamp_utc": "2026-11-24T20:53:56.988880+00:00",
-      "agent": "VisualConsistencyAgent",
-      "stage": "keyframes",
-      "shot_id": "shot_10",
-      "provider": "cache",
-      "model": "cache-manifest",
-      "parameters": {
-        "shot_hash": "7609dcbec2cffac26a2dd9acb8dc8952e634e6e3021bb4e51e357c01a994c4bb"
-      },
-      "seed": 10110,
-      "latency_ms": 0.5,
-      "estimated_cost_usd": 0.0,
-      "cache_hit": true,
-      "status": "success",
-      "error": null
-    },
-    {
-      "trace_id": "60f03894-fca8-4867-bf3a-34a49740f699",
-      "timestamp_utc": "2026-11-24T20:53:56.986859+00:00",
-      "agent": "VisualConsistencyAgent",
-      "stage": "keyframes",
-      "shot_id": "shot_09",
-      "provider": "cache",
-      "model": "cache-manifest",
-      "parameters": {
-        "shot_hash": "373aec9cd30f81bcf02866dfb2dab1dbbac9c019fe3cef342576ad9f92db4b56"
-      },
-      "seed": 10109,
-      "latency_ms": 0.5,
-      "estimated_cost_usd": 0.0,
-      "cache_hit": true,
-      "status": "success",
-      "error": null
-    },
-    {
-      "trace_id": "065536dc-3189-4421-86a1-690b2a2659e3",
-      "timestamp_utc": "2026-11-24T20:53:56.986859+00:00",
-      "agent": "VisualConsistencyAgent",
-      "stage": "keyframes",
-      "shot_id": "shot_08",
-      "provider": "cache",
-      "model": "cache-manifest",
-      "parameters": {
-        "shot_hash": "4ca1d8fa727ed763d9b6fd7fe56540a3e91e1e038a792f4e22055bf4771c62de"
-      },
-      "seed": 10108,
-      "latency_ms": 0.5,
-      "estimated_cost_usd": 0.0,
-      "cache_hit": true,
-      "status": "success",
-      "error": null
-    },
-    {
-      "trace_id": "df6ea292-10d7-4266-b505-3ae93a9c14ba",
-      "timestamp_utc": "2026-11-24T20:53:56.983149+00:00",
-      "agent": "VisualConsistencyAgent",
-      "stage": "keyframes",
-      "shot_id": "shot_07",
-      "provider": "cache",
-      "model": "cache-manifest",
-      "parameters": {
-        "shot_hash": "77928abb6203f734cf2a31137b2bc842eb4d0719f5c3ec157bb2fbcae8ba4d14"
-      },
-      "seed": 10107,
-      "latency_ms": 0.5,
-      "estimated_cost_usd": 0.0,
-      "cache_hit": true,
-      "status": "success",
-      "error": null
-    },
-    {
-      "trace_id": "d07f0a46-fc0f-4d3b-9725-e831f994c949",
-      "timestamp_utc": "2026-11-24T20:53:56.983149+00:00",
-      "agent": "VisualConsistencyAgent",
-      "stage": "keyframes",
-      "shot_id": "shot_06",
-      "provider": "cache",
-      "model": "cache-manifest",
-      "parameters": {
-        "shot_hash": "2382f772ed1e19ee5b142da7ff553017d1d3eba854fa820126da0ae261963d62"
-      },
-      "seed": 10106,
-      "latency_ms": 0.5,
-      "estimated_cost_usd": 0.0,
-      "cache_hit": true,
-      "status": "success",
-      "error": null
-    },
-    {
-      "trace_id": "bd604e25-0617-4df9-9376-ee0ec1fd307c",
-      "timestamp_utc": "2026-11-24T20:53:56.983149+00:00",
-      "agent": "VisualConsistencyAgent",
-      "stage": "keyframes",
-      "shot_id": "shot_05",
-      "provider": "cache",
-      "model": "cache-manifest",
-      "parameters": {
-        "shot_hash": "96d3ea823b6a4b0b9fc9329825523efd06276e127d9997ab4d2ee12f40e5a86c"
-      },
-      "seed": 10105,
-      "latency_ms": 0.5,
-      "estimated_cost_usd": 0.0,
-      "cache_hit": true,
-      "status": "success",
-      "error": null
-    },
-    {
-      "trace_id": "105b4d95-ccba-492f-8d7d-44a602a40685",
-      "timestamp_utc": "2026-11-24T20:53:56.982312+00:00",
-      "agent": "VisualConsistencyAgent",
-      "stage": "keyframes",
-      "shot_id": "shot_04",
-      "provider": "cache",
-      "model": "cache-manifest",
-      "parameters": {
-        "shot_hash": "5793c0aa5d5cb109175092154c5a89fbce4f69ed25f678c233a627ca779dc21f"
-      },
-      "seed": 10104,
-      "latency_ms": 0.5,
-      "estimated_cost_usd": 0.0,
-      "cache_hit": true,
-      "status": "success",
-      "error": null
-    },
-    {
-      "trace_id": "899c82c2-aa26-4994-928b-2c17c1d07384",
-      "timestamp_utc": "2026-11-24T20:53:56.980798+00:00",
-      "agent": "VisualConsistencyAgent",
-      "stage": "keyframes",
-      "shot_id": "shot_03",
-      "provider": "cache",
-      "model": "cache-manifest",
-      "parameters": {
-        "shot_hash": "60b6f2e877d3a00101ad0896ca5b8794dd3146ea3f8a060a5bbba54c1d2a00f9"
-      },
-      "seed": 10103,
-      "latency_ms": 0.5,
-      "estimated_cost_usd": 0.0,
-      "cache_hit": true,
-      "status": "success",
-      "error": null
-    },
-    {
-      "trace_id": "a7c7be08-3c4c-4bd7-b374-8f905a4f4594",
-      "timestamp_utc": "2026-11-24T20:53:56.978670+00:00",
-      "agent": "VisualConsistencyAgent",
-      "stage": "keyframes",
-      "shot_id": "shot_02",
-      "provider": "cache",
-      "model": "cache-manifest",
-      "parameters": {
-        "shot_hash": "cf3c8c4578d7eccbb96b9cf505982bb92738669a801cf16108795354c7f21899"
-      },
-      "seed": 10102,
-      "latency_ms": 0.5,
-      "estimated_cost_usd": 0.0,
-      "cache_hit": true,
-      "status": "success",
-      "error": null
-    },
-    {
-      "trace_id": "94c37d5e-dbb4-4bee-9785-43ca309d7b31",
-      "timestamp_utc": "2026-11-24T20:53:56.976665+00:00",
-      "agent": "VisualConsistencyAgent",
-      "stage": "keyframes",
-      "shot_id": "shot_01",
-      "provider": "cache",
-      "model": "cache-manifest",
-      "parameters": {
-        "shot_hash": "ef595f6e90178c19cf2a8dbb83372f86ce3df256340586617358115d37992064"
-      },
-      "seed": 10101,
-      "latency_ms": 0.5,
-      "estimated_cost_usd": 0.0,
-      "cache_hit": true,
-      "status": "success",
-      "error": null
-    },
-    {
-      "trace_id": "84777231-3843-4d78-a0f5-901225d0e26d",
-      "timestamp_utc": "2026-11-24T20:53:36.637370+00:00",
+      "trace_id": "99a47e5c-1dd2-43e1-9d9d-eedcf3a8e1e5",
+      "timestamp_utc": "2026-11-25T17:00:10.701546+00:00",
       "agent": "AudioVoiceAgent",
       "stage": "narration",
       "shot_id": "shot_10",
       "provider": "edge-tts",
       "model": "am-ET-AmehaNeural",
       "parameters": {
-        "duration_sec": 5.47,
+        "duration_sec": 5.78,
         "sample_rate": 24000,
         "language": "am"
       },
       "seed": 10110,
-      "latency_ms": 4808.45,
+      "latency_ms": 5861.65,
       "estimated_cost_usd": 0.0,
       "cache_hit": false,
       "status": "fallback",
-      "error": "models/gemini-3.8-flash error: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-3.8-flash, description: Generate content requests per minute limit exceeded on Free Tier. See https://aistudio.google.com/docs/rate-limits.\\nPlease retry in 27.948331562s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://aistudio.google.com/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'description': 'Generate content requests per minute limit exceeded on Free Tier. See https://aistudio.google.com/docs/rate-limits.', 'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.8-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '27s'}]}}"
+      "error": "models/gemini-3.8-flash error: 400 INVALID_ARGUMENT. {'error': {'code': 400, 'message': 'Manually set deadline 8s is too short. Minimum allowed deadline is 10s.', 'status': 'INVALID_ARGUMENT'}}"
     },
     {
-      "trace_id": "09d2d6f1-66ad-41ca-b65e-b035796d457c",
-      "timestamp_utc": "2026-11-24T20:53:31.775477+00:00",
+      "trace_id": "eef4696e-2ecc-47e1-8336-a73e6d01fcef",
+      "timestamp_utc": "2026-11-25T17:00:04.741832+00:00",
       "agent": "AudioVoiceAgent",
       "stage": "narration",
       "shot_id": "shot_09",
       "provider": "edge-tts",
       "model": "am-ET-AmehaNeural",
+      "parameters": {
+        "duration_sec": 6.58,
+        "sample_rate": 24000,
+        "language": "am"
+      },
+      "seed": 10109,
+      "latency_ms": 4736.8,
+      "estimated_cost_usd": 0.0,
+      "cache_hit": false,
+      "status": "fallback",
+      "error": "models/gemini-3.8-flash error: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-3.8-flash, description: Generate content requests per minute limit exceeded on Free Tier. See https://aistudio.google.com/docs/rate-limits.\\nPlease retry in 253.073932ms.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://aistudio.google.com/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'description': 'Generate content requests per minute limit exceeded on Free Tier. See https://aistudio.google.com/docs/rate-limits.', 'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-3.8-flash', 'location': 'global'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '0s'}]}}"
+    },
+    {
+      "trace_id": "9eb1012a-4ac9-4c22-8c7c-9c724f84f6f1",
+      "timestamp_utc": "2026-11-25T16:59:59.906149+00:00",
+      "agent": "AudioVoiceAgent",
+      "stage": "narration",
+      "shot_id": "shot_08",
+      "provider": "edge-tts",
+      "model": "am-ET-AmehaNeural",
+      "parameters": {
+        "duration_sec": 7.34,
+        "sample_rate": 24000,
+        "language": "am"
+      },
+      "seed": 10108,
+      "latency_ms": 6380.19,
+      "estimated_cost_usd": 0.0,
+      "cache_hit": false,
+      "status": "fallback",
+      "error": "models/gemini-3.8-flash error: 400 INVALID_ARGUMENT. {'error': {'code': 400, 'message': 'Manually set deadline 8s is too short. Minimum allowed deadline is 10s.', 'status': 'INVALID_ARGUMENT'}}"
+    },
+    {
+      "trace_id": "ef746676-b613-476c-92c3-b19598603e57",
+      "timestamp_utc": "2026-11-25T16:59:53.454113+00:00",
+      "agent": "AudioVoiceAgent",
+      "stage": "narration",
+      "shot_id": "shot_07",
+      "provider": "edge-tts",
+      "model": "am-ET-AmehaNeural",
+      "parameters": {
+        "duration_sec": 7.15,
+        "sample_rate": 24000,
+        "language": "am"
+      },
+      "seed": 10107,
+      "latency_ms": 5903.79,
+      "estimated_cost_usd": 0.0,
+      "cache_hit": false,
+      "status": "fallback",
+      "error": "models/gemini-3.8-flash error: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-3.8-flash, description: Generate content requests per minute limit exceeded on Free Tier. See https://aistudio.google.com/docs/rate-limits.\\nPlease retry in 12.554887505s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://aistudio.google.com/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'description': 'Generate content requests per minute limit exceeded on Free Tier. See https://aistudio.google.com/docs/rate-limits.', 'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-3.8-flash', 'location': 'global'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '12s'}]}}"
+    },
+    {
+      "trace_id": "ee1c997c-8b93-4fa6-92f5-217892d326df",
+      "timestamp_utc": "2026-11-25T16:59:47.474458+00:00",
+      "agent": "AudioVoiceAgent",
+      "stage": "narration",
+      "shot_id": "shot_06",
+      "provider": "edge-tts",
+      "model": "am-ET-AmehaNeural",
+      "parameters": {
+        "duration_sec": 8.09,
+        "sample_rate": 24000,
+        "language": "am"
+      },
+      "seed": 10106,
+      "latency_ms": 8392.86,
+      "estimated_cost_usd": 0.0,
+      "cache_hit": false,
+      "status": "fallback",
+      "error": "models/gemini-3.8-flash error: 400 INVALID_ARGUMENT. {'error': {'code': 400, 'message': 'Manually set deadline 8s is too short. Minimum allowed deadline is 10s.', 'status': 'INVALID_ARGUMENT'}}"
+    },
+    {
+      "trace_id": "fd058edb-f997-4481-b317-fe289df79c8a",
+      "timestamp_utc": "2026-11-25T16:59:38.990615+00:00",
+      "agent": "AudioVoiceAgent",
+      "stage": "narration",
+      "shot_id": "shot_05",
+      "provider": "edge-tts",
+      "model": "am-ET-AmehaNeural",
+      "parameters": {
+        "duration_sec": 7.2,
+        "sample_rate": 24000,
+        "language": "am"
+      },
+      "seed": 10105,
+      "latency_ms": 4845.46,
+      "estimated_cost_usd": 0.0,
+      "cache_hit": false,
+      "status": "fallback",
+      "error": "models/gemini-3.8-flash error: 400 INVALID_ARGUMENT. {'error': {'code': 400, 'message': 'Manually set deadline 8s is too short. Minimum allowed deadline is 10s.', 'status': 'INVALID_ARGUMENT'}}"
+    },
+    {
+      "trace_id": "e65b84ff-2d0b-44aa-9260-95f3ec1033d3",
+      "timestamp_utc": "2026-11-25T16:59:34.037689+00:00",
+      "agent": "AudioVoiceAgent",
+      "stage": "narration",
+      "shot_id": "shot_04",
+      "provider": "edge-tts",
+      "model": "am-ET-AmehaNeural",
+      "parameters": {
+        "duration_sec": 7.25,
+        "sample_rate": 24000,
+        "language": "am"
+      },
+      "seed": 10104,
+      "latency_ms": 3588.93,
+      "estimated_cost_usd": 0.0,
+      "cache_hit": false,
+      "status": "fallback",
+      "error": "models/gemini-3.8-flash error: 400 INVALID_ARGUMENT. {'error': {'code': 400, 'message': 'Manually set deadline 8s is too short. Minimum allowed deadline is 10s.', 'status': 'INVALID_ARGUMENT'}}"
+    },
+    {
+      "trace_id": "7f52ab52-b520-4742-bea1-3b77c1b3dac0",
+      "timestamp_utc": "2026-11-25T16:59:30.359622+00:00",
+      "agent": "AudioVoiceAgent",
+      "stage": "narration",
+      "shot_id": "shot_03",
+      "provider": "edge-tts",
+      "model": "am-ET-MekdesNeural",
+      "parameters": {
+        "duration_sec": 6.1,
+        "sample_rate": 24000,
+        "language": "am"
+      },
+      "seed": 10103,
+      "latency_ms": 8573.29,
+      "estimated_cost_usd": 0.0,
+      "cache_hit": false,
+      "status": "fallback",
+      "error": "models/gemini-3.8-flash error: 400 INVALID_ARGUMENT. {'error': {'code': 400, 'message': 'Manually set deadline 8s is too short. Minimum allowed deadline is 10s.', 'status': 'INVALID_ARGUMENT'}}"
+    },
+    {
+      "trace_id": "45c96b16-dd3e-4365-a484-d8375d0a679f",
+      "timestamp_utc": "2026-11-25T16:59:21.698164+00:00",
+      "agent": "AudioVoiceAgent",
+      "stage": "narration",
+      "shot_id": "shot_02",
+      "provider": "edge-tts",
+      "model": "am-ET-AmehaNeural",
+      "parameters": {
+        "duration_sec": 6.26,
+        "sample_rate": 24000,
+        "language": "am"
+      },
+      "seed": 10102,
+      "latency_ms": 4844.88,
+      "estimated_cost_usd": 0.0,
+      "cache_hit": false,
+      "status": "fallback",
+      "error": "models/gemini-3.8-flash error: 400 INVALID_ARGUMENT. {'error': {'code': 400, 'message': 'Manually set deadline 8s is too short. Minimum allowed deadline is 10s.', 'status': 'INVALID_ARGUMENT'}}"
+    },
+    {
+      "trace_id": "9d48b1b5-f538-404b-98be-c752528b2df8",
+      "timestamp_utc": "2026-11-25T16:59:16.775654+00:00",
+      "agent": "AudioVoiceAgent",
+      "stage": "narration",
+      "shot_id": "shot_01",
+      "provider": "edge-tts",
+      "model": "am-ET-AmehaNeural",
+      "parameters": {
+        "duration_sec": 6.22,
+        "sample_rate": 24000,
+        "language": "am"
+      },
+      "seed": 10101,
+      "latency_ms": 11279.16,
+      "estimated_cost_usd": 0.0,
+      "cache_hit": false,
+      "status": "fallback",
+      "error": "models/gemini-3.8-flash error: 400 INVALID_ARGUMENT. {'error': {'code': 400, 'message': 'Manually set deadline 8s is too short. Minimum allowed deadline is 10s.', 'status': 'INVALID_ARGUMENT'}}"
+    },
+    {
+      "trace_id": "34ba34b3-1dbd-4d0b-841e-d002c3b7f707",
+      "timestamp_utc": "2026-11-25T16:59:05.408435+00:00",
+      "agent": "AudioVoiceAgent",
+      "stage": "narration",
+      "shot_id": "shot_10",
+      "provider": "edge-tts",
+      "model": "en-US-AndrewMultilingualNeural",
+      "parameters": {
+        "duration_sec": 4.99,
+        "sample_rate": 24000,
+        "language": "en"
+      },
+      "seed": 10110,
+      "latency_ms": 5368.78,
+      "estimated_cost_usd": 0.0,
+      "cache_hit": false,
+      "status": "success",
+      "error": null
+    },
+    {
+      "trace_id": "6c5200bf-f05c-4642-a96e-97ee24ef0bc4",
+      "timestamp_utc": "2026-11-25T16:58:59.941637+00:00",
+      "agent": "AudioVoiceAgent",
+      "stage": "narration",
+      "shot_id": "shot_09",
+      "provider": "edge-tts",
+      "model": "en-US-AndrewMultilingualNeural",
+      "parameters": {
+        "duration_sec": 6.0,
+        "sample_rate": 24000,
+        "language": "en"
+      },
+      "seed": 10109,
+      "latency_ms": 8921.55,
+      "estimated_cost_usd": 0.0,
+      "cache_hit": false,
+      "status": "success",
+      "error": null
+    },
+    {
+      "trace_id": "ff6c2e3a-44e6-40ca-bfc4-95a007f91abc",
+      "timestamp_utc": "2026-11-25T16:58:50.919261+00:00",
+      "agent": "AudioVoiceAgent",
+      "stage": "narration",
+      "shot_id": "shot_08",
+      "provider": "edge-tts",
+      "model": "en-US-AndrewMultilingualNeural",
+      "parameters": {
+        "duration_sec": 6.26,
+        "sample_rate": 24000,
+        "language": "en"
+      },
+      "seed": 10108,
+      "latency_ms": 7781.53,
+      "estimated_cost_usd": 0.0,
+      "cache_hit": false,
+      "status": "success",
+      "error": null
+    },
+    {
+      "trace_id": "860acc4c-0ca4-481e-a0e7-1f142dd49917",
+      "timestamp_utc": "2026-11-25T16:58:43.065194+00:00",
+      "agent": "AudioVoiceAgent",
+      "stage": "narration",
+      "shot_id": "shot_07",
+      "provider": "edge-tts",
+      "model": "en-US-AndrewMultilingualNeural",
       "parameters": {
         "duration_sec": 6.24,
         "sample_rate": 24000,
-        "language": "am"
-      },
-      "seed": 10109,
-      "latency_ms": 6240.58,
-      "estimated_cost_usd": 0.0,
-      "cache_hit": false,
-      "status": "fallback",
-      "error": "models/gemini-3.8-flash error: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-3.8-flash, description: Generate content requests per minute limit exceeded on Free Tier. See https://aistudio.google.com/docs/rate-limits.\\nPlease retry in 33.956758994s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://aistudio.google.com/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'description': 'Generate content requests per minute limit exceeded on Free Tier. See https://aistudio.google.com/docs/rate-limits.', 'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-3.8-flash', 'location': 'global'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '33s'}]}}"
-    },
-    {
-      "trace_id": "59d0483f-b5c4-4262-bb40-00396c461f89",
-      "timestamp_utc": "2026-11-24T20:53:25.493747+00:00",
-      "agent": "AudioVoiceAgent",
-      "stage": "narration",
-      "shot_id": "shot_08",
-      "provider": "edge-tts",
-      "model": "am-ET-AmehaNeural",
-      "parameters": {
-        "duration_sec": 6.96,
-        "sample_rate": 24000,
-        "language": "am"
-      },
-      "seed": 10108,
-      "latency_ms": 4432.63,
-      "estimated_cost_usd": 0.0,
-      "cache_hit": false,
-      "status": "fallback",
-      "error": "models/gemini-3.8-flash error: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 5, model: gemini-3.8-flash, description: Generate content requests per minute limit exceeded on Free Tier. See https://aistudio.google.com/docs/rate-limits.\\nPlease retry in 38.576086875s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://aistudio.google.com/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'description': 'Generate content requests per minute limit exceeded on Free Tier. See https://aistudio.google.com/docs/rate-limits.', 'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.8-flash'}, 'quotaValue': '5'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '38s'}]}}"
-    },
-    {
-      "trace_id": "bf9f97bd-8752-4b1c-9e64-723eb32071e8",
-      "timestamp_utc": "2026-11-24T20:53:21.014462+00:00",
-      "agent": "AudioVoiceAgent",
-      "stage": "narration",
-      "shot_id": "shot_07",
-      "provider": "edge-tts",
-      "model": "am-ET-AmehaNeural",
-      "parameters": {
-        "duration_sec": 6.77,
-        "sample_rate": 24000,
-        "language": "am"
+        "language": "en"
       },
       "seed": 10107,
-      "latency_ms": 4461.72,
+      "latency_ms": 7987.62,
       "estimated_cost_usd": 0.0,
       "cache_hit": false,
-      "status": "fallback",
-      "error": "models/gemini-3.8-flash error: 400 INVALID_ARGUMENT. {'error': {'code': 400, 'message': 'Manually set deadline 8s is too short. Minimum allowed deadline is 10s.', 'status': 'INVALID_ARGUMENT'}}"
+      "status": "success",
+      "error": null
     },
     {
-      "trace_id": "d1955ffe-f43f-4551-87be-2b95f4bfe6a2",
-      "timestamp_utc": "2026-11-24T20:53:16.500851+00:00",
+      "trace_id": "8744beb1-4a91-4392-8b57-a05d29bc29f8",
+      "timestamp_utc": "2026-11-25T16:58:35.035589+00:00",
       "agent": "AudioVoiceAgent",
       "stage": "narration",
       "shot_id": "shot_06",
       "provider": "edge-tts",
-      "model": "am-ET-AmehaNeural",
+      "model": "en-US-AndrewMultilingualNeural",
       "parameters": {
-        "duration_sec": 7.66,
+        "duration_sec": 6.12,
         "sample_rate": 24000,
-        "language": "am"
+        "language": "en"
       },
       "seed": 10106,
-      "latency_ms": 3973.92,
+      "latency_ms": 11644.37,
       "estimated_cost_usd": 0.0,
       "cache_hit": false,
-      "status": "fallback",
-      "error": "models/gemini-3.8-flash error: 400 INVALID_ARGUMENT. {'error': {'code': 400, 'message': 'Manually set deadline 8s is too short. Minimum allowed deadline is 10s.', 'status': 'INVALID_ARGUMENT'}}"
+      "status": "success",
+      "error": null
     },
     {
-      "trace_id": "867152a9-beb4-41c7-b7a3-018aa2e2def1",
-      "timestamp_utc": "2026-11-24T20:53:12.491613+00:00",
+      "trace_id": "959ea0b7-3688-44a0-af05-38fd04ea0351",
+      "timestamp_utc": "2026-11-25T16:58:23.345684+00:00",
       "agent": "AudioVoiceAgent",
       "stage": "narration",
       "shot_id": "shot_05",
       "provider": "edge-tts",
-      "model": "am-ET-AmehaNeural",
+      "model": "en-US-AndrewMultilingualNeural",
       "parameters": {
-        "duration_sec": 6.82,
+        "duration_sec": 6.65,
         "sample_rate": 24000,
-        "language": "am"
+        "language": "en"
       },
       "seed": 10105,
-      "latency_ms": 5981.03,
+      "latency_ms": 7455.63,
       "estimated_cost_usd": 0.0,
       "cache_hit": false,
-      "status": "fallback",
-      "error": "models/gemini-3.8-flash error: 400 INVALID_ARGUMENT. {'error': {'code': 400, 'message': 'Manually set deadline 8s is too short. Minimum allowed deadline is 10s.', 'status': 'INVALID_ARGUMENT'}}"
+      "status": "success",
+      "error": null
     },
     {
-      "trace_id": "6e3ef435-3cf5-4843-8047-ca5406ff737d",
-      "timestamp_utc": "2026-11-24T20:53:06.450455+00:00",
+      "trace_id": "2fe3714d-e2c3-41bc-a91d-2d90b8e59e5a",
+      "timestamp_utc": "2026-11-25T16:58:15.835912+00:00",
       "agent": "AudioVoiceAgent",
       "stage": "narration",
       "shot_id": "shot_04",
       "provider": "edge-tts",
-      "model": "am-ET-AmehaNeural",
+      "model": "en-US-AndrewMultilingualNeural",
       "parameters": {
-        "duration_sec": 6.86,
+        "duration_sec": 6.02,
         "sample_rate": 24000,
-        "language": "am"
+        "language": "en"
       },
       "seed": 10104,
-      "latency_ms": 5974.77,
+      "latency_ms": 7848.76,
       "estimated_cost_usd": 0.0,
       "cache_hit": false,
-      "status": "fallback",
-      "error": "models/gemini-3.8-flash error: 400 INVALID_ARGUMENT. {'error': {'code': 400, 'message': 'Manually set deadline 8s is too short. Minimum allowed deadline is 10s.', 'status': 'INVALID_ARGUMENT'}}"
+      "status": "success",
+      "error": null
+    },
+    {
+      "trace_id": "ae998001-5806-42c9-84de-893047ef8117",
+      "timestamp_utc": "2026-11-25T16:58:07.947903+00:00",
+      "agent": "AudioVoiceAgent",
+      "stage": "narration",
+      "shot_id": "shot_03",
+      "provider": "edge-tts",
+      "model": "en-US-AndrewMultilingualNeural",
+      "parameters": {
+        "duration_sec": 5.4,
+        "sample_rate": 24000,
+        "language": "en"
+      },
+      "seed": 10103,
+      "latency_ms": 8745.87,
+      "estimated_cost_usd": 0.0,
+      "cache_hit": false,
+      "status": "success",
+      "error": null
+    },
+    {
+      "trace_id": "7be829d9-40fa-41e1-a9dc-080801661a92",
+      "timestamp_utc": "2026-11-25T16:57:59.137840+00:00",
+      "agent": "AudioVoiceAgent",
+      "stage": "narration",
+      "shot_id": "shot_02",
+      "provider": "edge-tts",
+      "model": "en-US-AndrewMultilingualNeural",
+      "parameters": {
+        "duration_sec": 5.62,
+        "sample_rate": 24000,
+        "language": "en"
+      },
+      "seed": 10102,
+      "latency_ms": 5541.47,
+      "estimated_cost_usd": 0.0,
+      "cache_hit": false,
+      "status": "success",
+      "error": null
+    },
+    {
+      "trace_id": "f2977abf-80cd-4944-956b-4e37b2bc08f1",
+      "timestamp_utc": "2026-11-25T16:57:53.537799+00:00",
+      "agent": "AudioVoiceAgent",
+      "stage": "narration",
+      "shot_id": "shot_01",
+      "provider": "edge-tts",
+      "model": "en-US-AndrewMultilingualNeural",
+      "parameters": {
+        "duration_sec": 5.33,
+        "sample_rate": 24000,
+        "language": "en"
+      },
+      "seed": 10101,
+      "latency_ms": 7880.9,
+      "estimated_cost_usd": 0.0,
+      "cache_hit": false,
+      "status": "success",
+      "error": null
+    },
+    {
+      "trace_id": "8c69cf09-13a6-4e7b-82f6-01a45a03d534",
+      "timestamp_utc": "2026-11-25T16:55:57.627697+00:00",
+      "agent": "AudioVoiceAgent",
+      "stage": "narration",
+      "shot_id": "shot_10",
+      "provider": "edge-tts",
+      "model": "en-US-AndrewMultilingualNeural",
+      "parameters": {
+        "duration_sec": 6.22,
+        "sample_rate": 24000,
+        "language": "en"
+      },
+      "seed": 10110,
+      "latency_ms": 7003.58,
+      "estimated_cost_usd": 0.0,
+      "cache_hit": false,
+      "status": "success",
+      "error": null
     }
   ],
   "hitl_state": {

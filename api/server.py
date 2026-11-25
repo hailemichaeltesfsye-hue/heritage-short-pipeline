@@ -61,6 +61,7 @@ class ShotUpdateRequest(BaseModel):
     visual_prompt: Optional[str] = None
     motion_prompt: Optional[str] = None
     narration_am: Optional[str] = None
+    narration_en: Optional[str] = None
     subtitle_en: Optional[str] = None
     reason: Optional[str] = None
     seed: Optional[int] = Field(None, ge=0)
@@ -68,6 +69,7 @@ class ShotUpdateRequest(BaseModel):
 
 class PipelineRunRequest(BaseModel):
     stage: str = Field("all", description="all, keyframes, shots, music, assemble, narration, radio-cut")
+    language: str = Field("en", description="Narration language: en, am, or both")
     shot_id: Optional[str] = None
     dry_run: bool = False
     force: bool = False
@@ -94,9 +96,13 @@ def get_outputs_manifest() -> Dict[str, Any]:
     tracked = [
         "final_16x9.mp4",
         "final_9x16.mp4",
+        "final_16x9_am.mp4",
+        "final_9x16_am.mp4",
         "radio_cut.mp4",
         "subtitles.srt",
+        "subtitles_am.srt",
         "audio_master_mixed.wav",
+        "audio_master_mixed_am.wav",
         "music/score_normalized.wav",
         "reference/character_sheet.png",
     ]
@@ -106,14 +112,33 @@ def get_outputs_manifest() -> Dict[str, Any]:
     }
     keyframes_dir = OUTPUTS_DIR / "keyframes"
     narration_dir = OUTPUTS_DIR / "narration"
+    narration_en_dir = narration_dir / "en"
+    narration_am_dir = narration_dir / "am"
+
+    narration_en = (
+        sorted(p.stem for p in narration_en_dir.glob("*.wav") if p.stat().st_size > 0)
+        if narration_en_dir.exists()
+        else []
+    )
+    narration_am = (
+        sorted(p.stem for p in narration_am_dir.glob("*.wav") if p.stat().st_size > 0)
+        if narration_am_dir.exists()
+        else []
+    )
+    narration_legacy = (
+        sorted(p.stem for p in narration_dir.glob("*.wav") if p.stat().st_size > 0)
+        if narration_dir.exists()
+        else []
+    )
+
     return {
         "files": files,
         "keyframes": sorted(p.stem for p in keyframes_dir.glob("*.png") if p.stat().st_size > 0)
         if keyframes_dir.exists()
         else [],
-        "narration": sorted(p.stem for p in narration_dir.glob("*.wav") if p.stat().st_size > 0)
-        if narration_dir.exists()
-        else [],
+        "narration": narration_en or narration_am or narration_legacy,
+        "narration_en": narration_en,
+        "narration_am": narration_am,
     }
 
 
@@ -196,44 +221,53 @@ def run_pipeline_stage(req: PipelineRunRequest) -> Dict[str, Any]:
         storyboard_data = json.load(f)
 
     stage = req.stage.lower()
+    raw_lang = req.language.strip().lower()
+    if raw_lang not in ("en", "am", "both"):
+        raise HTTPException(status_code=400, detail=f"Unsupported language '{req.language}'. Must be en, am, or both.")
+    langs = ["en", "am"] if raw_lang == "both" else [raw_lang]
 
     if stage in ("all", "graph"):
         from agents.graph import create_pipeline_graph
 
         graph = create_pipeline_graph()
-        initial_state = {
-            "storyboard_path": str(STORYBOARD_PATH),
-            "storyboard_data": storyboard_data,
-            "dry_run": req.dry_run,
-            "hitl": req.hitl,
-            "target_shot_id": req.shot_id,
-            "force": req.force,
-            "stage": stage,
-            "trace_id": f"api-{int(time.time())}",
-            "is_valid_schema": False,
-            "safety_passed": False,
-            "shot_hashes": {},
-            "keyframes": {},
-            "audio_files": {},
-            "shots_video": {},
-            "score_path": None,
-            "radio_cut_path": None,
-            "final_16x9_path": None,
-            "final_9x16_path": None,
-            "errors": [],
-            "retry_counts": {},
-            "step_status": {},
-            "hitl_paused": False,
-        }
-        res = graph.invoke(initial_state)
-        if res.get("errors"):
-            raise HTTPException(status_code=500, detail={"errors": res["errors"]})
+        last_res: Dict[str, Any] = {}
+        for lang in langs:
+            initial_state = {
+                "storyboard_path": str(STORYBOARD_PATH),
+                "storyboard_data": storyboard_data,
+                "dry_run": req.dry_run,
+                "hitl": req.hitl,
+                "language": lang,
+                "target_shot_id": req.shot_id,
+                "force": req.force,
+                "stage": stage,
+                "trace_id": f"api-{lang}-{int(time.time())}",
+                "is_valid_schema": False,
+                "safety_passed": False,
+                "shot_hashes": {},
+                "keyframes": {},
+                "audio_files": {},
+                "shots_video": {},
+                "score_path": None,
+                "radio_cut_path": None,
+                "final_16x9_path": None,
+                "final_9x16_path": None,
+                "errors": [],
+                "retry_counts": {},
+                "step_status": {},
+                "hitl_paused": False,
+            }
+            res = graph.invoke(initial_state)
+            if res.get("errors"):
+                raise HTTPException(status_code=500, detail={"errors": res["errors"]})
+            last_res = res
         return {
             "status": "success",
             "stage": stage,
+            "language": raw_lang,
             "errors": [],
-            "final_16x9": res.get("final_16x9_path"),
-            "final_9x16": res.get("final_9x16_path"),
+            "final_16x9": last_res.get("final_16x9_path"),
+            "final_9x16": last_res.get("final_9x16_path"),
         }
 
     if stage == "keyframes":
@@ -264,15 +298,17 @@ def run_pipeline_stage(req: PipelineRunRequest) -> Dict[str, Any]:
             shots_to_run = [s for s in shots_to_run if s["shot_id"] == req.shot_id]
         results = {}
         failed = []
-        for s in shots_to_run:
-            succ, p, mod, _ = generate_shot_narration(s, dry_run=req.dry_run)
-            if not succ:
-                failed.append(s["shot_id"])
-            else:
-                results[s["shot_id"]] = {"path": str(p), "model": mod}
+        for lang in langs:
+            for s in shots_to_run:
+                succ, p, mod, _ = generate_shot_narration(s, dry_run=req.dry_run, language=lang)
+                key = f"{s['shot_id']}_{lang}"
+                if not succ:
+                    failed.append(key)
+                else:
+                    results[key] = {"path": str(p), "model": mod, "language": lang}
         if failed:
             raise HTTPException(status_code=500, detail=f"Narration failed for: {', '.join(failed)}")
-        return {"status": "success", "narration_files": results}
+        return {"status": "success", "language": raw_lang, "narration_files": results}
 
     if stage == "shots":
         from pipeline.shots import process_shot_motion
@@ -302,11 +338,21 @@ def run_pipeline_stage(req: PipelineRunRequest) -> Dict[str, Any]:
     if stage in ("assemble", "radio-cut"):
         from pipeline.assemble import assemble_full_dual_aspect_pipeline
 
+        assembled: Dict[str, str] = {}
         try:
-            f16, f9 = assemble_full_dual_aspect_pipeline(storyboard_data, dry_run=req.dry_run)
+            for lang in langs:
+                f16, f9 = assemble_full_dual_aspect_pipeline(storyboard_data, dry_run=req.dry_run, language=lang)
+                assembled[f"{lang}_16x9"] = str(f16)
+                assembled[f"{lang}_9x16"] = str(f9)
         except Exception as exc:
             raise HTTPException(status_code=500, detail=str(exc)) from exc
-        return {"status": "success", "final_16x9": str(f16), "final_9x16": str(f9)}
+        return {
+            "status": "success",
+            "language": raw_lang,
+            "final_16x9": assembled.get("en_16x9") or assembled.get("am_16x9"),
+            "final_9x16": assembled.get("en_9x16") or assembled.get("am_9x16"),
+            "outputs": assembled,
+        }
 
     raise HTTPException(status_code=400, detail=f"Unsupported stage '{stage}'")
 
