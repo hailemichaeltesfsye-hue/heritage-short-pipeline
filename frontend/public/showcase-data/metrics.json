@@ -1,28 +1,30 @@
 {
   "summary": {
-    "total_runs": 202,
-    "total_latency_ms": 3361423.76,
-    "total_cost_usd": 0.048,
+    "total_runs": 210,
+    "total_latency_ms": 3472186.51,
+    "total_cost_usd": 0.051,
     "cache_hits": 69,
-    "cache_misses": 133,
-    "cache_hit_ratio": 0.3416,
-    "failures": 69
+    "cache_misses": 141,
+    "cache_hit_ratio": 0.3286,
+    "failures": 74
   },
   "estimated_gpu_minutes": 0.0,
   "model_breakdown": {
     "governance-checker": 3,
     "director-rules": 3,
     "supervisor-router": 3,
-    "@cf/black-forest-labs/flux-2-klein-4b": 16,
+    "@cf/black-forest-labs/flux-2-klein-4b": 17,
     "flux-and-gemini-image": 3,
     "am-ET-AmehaNeural": 22,
     "cache-manifest": 69,
-    "ffmpeg-zoompan": 29,
+    "ffmpeg-zoompan": 30,
     "ffmpeg-ambient-fallback": 16,
-    "sidechaincompress-loudnorm": 14,
+    "sidechaincompress-loudnorm": 16,
     "ffmpeg-dual-aspect-master": 3,
     "en-US-AndrewMultilingualNeural": 20,
-    "am-ET-MekdesNeural": 1
+    "am-ET-MekdesNeural": 1,
+    "motivational-classical-instrumental": 3,
+    "keyframe-generator": 1
   },
   "stage_breakdown": {
     "governance": {
@@ -41,9 +43,9 @@
       "total_cost_usd": 0.0
     },
     "keyframes": {
-      "count": 56,
-      "total_latency_ms": 235369.39999999997,
-      "total_cost_usd": 0.04800000000000001
+      "count": 58,
+      "total_latency_ms": 253198.32999999996,
+      "total_cost_usd": 0.05100000000000001
     },
     "visual_compilation": {
       "count": 3,
@@ -56,18 +58,18 @@
       "total_cost_usd": 0.0
     },
     "motion_shot": {
-      "count": 29,
-      "total_latency_ms": 84023.74,
+      "count": 30,
+      "total_latency_ms": 87720.67,
       "total_cost_usd": 0.0
     },
     "music_score": {
-      "count": 16,
-      "total_latency_ms": 39568.649999999994,
+      "count": 19,
+      "total_latency_ms": 85912.23999999999,
       "total_cost_usd": 0.0
     },
     "audio_mastering": {
-      "count": 14,
-      "total_latency_ms": 70118.79999999999,
+      "count": 16,
+      "total_latency_ms": 113012.09999999999,
       "total_cost_usd": 0.0
     },
     "assembly_dual_aspect": {
@@ -77,6 +79,158 @@
     }
   },
   "recent_runs": [
+    {
+      "trace_id": "9d03c299-37c8-486a-a2b0-2d9558ace6a5",
+      "timestamp_utc": "2026-11-26T12:36:59.584110+00:00",
+      "agent": "VideoEditorAgent",
+      "stage": "audio_mastering",
+      "shot_id": null,
+      "provider": "ffmpeg",
+      "model": "sidechaincompress-loudnorm",
+      "parameters": {
+        "target_lufs": -14.0,
+        "true_peak_db": -1.0,
+        "intro_offset_sec": 3.0
+      },
+      "seed": null,
+      "latency_ms": 23393.52,
+      "estimated_cost_usd": 0.0,
+      "cache_hit": false,
+      "status": "success",
+      "error": null
+    },
+    {
+      "trace_id": "9377367f-007a-4949-ab2d-d50ce4d80c60",
+      "timestamp_utc": "2026-11-26T12:36:54.747276+00:00",
+      "agent": "AudioVoiceAgent",
+      "stage": "music_score",
+      "shot_id": null,
+      "provider": "classical_synth",
+      "model": "motivational-classical-instrumental",
+      "parameters": {
+        "total_duration_sec": 81.59,
+        "source": "outputs\\music\\score_synth.wav"
+      },
+      "seed": null,
+      "latency_ms": 17983.31,
+      "estimated_cost_usd": 0.0,
+      "cache_hit": false,
+      "status": "fallback",
+      "error": "outputs/music/score.wav missing; synthesized motivational classical instrumental"
+    },
+    {
+      "trace_id": "835c224d-e174-41e9-8ba9-bc92a2a92348",
+      "timestamp_utc": "2026-11-26T12:31:17.166496+00:00",
+      "agent": "VideoEditorAgent",
+      "stage": "audio_mastering",
+      "shot_id": null,
+      "provider": "ffmpeg",
+      "model": "sidechaincompress-loudnorm",
+      "parameters": {
+        "target_lufs": -14.0,
+        "true_peak_db": -1.0,
+        "intro_offset_sec": 3.0
+      },
+      "seed": null,
+      "latency_ms": 19499.78,
+      "estimated_cost_usd": 0.0,
+      "cache_hit": false,
+      "status": "success",
+      "error": null
+    },
+    {
+      "trace_id": "c98f264e-79c7-4198-a19a-d751f394dc88",
+      "timestamp_utc": "2026-11-26T12:31:11.736278+00:00",
+      "agent": "AudioVoiceAgent",
+      "stage": "music_score",
+      "shot_id": null,
+      "provider": "classical_synth",
+      "model": "motivational-classical-instrumental",
+      "parameters": {
+        "total_duration_sec": 80.0,
+        "source": "outputs\\music\\score_synth.wav"
+      },
+      "seed": null,
+      "latency_ms": 13727.3,
+      "estimated_cost_usd": 0.0,
+      "cache_hit": false,
+      "status": "fallback",
+      "error": "outputs/music/score.wav missing; synthesized motivational classical instrumental"
+    },
+    {
+      "trace_id": "be0d9f71-3151-4f3d-badb-b04430a7d475",
+      "timestamp_utc": "2026-11-26T12:30:18.791383+00:00",
+      "agent": "VideoEditorAgent",
+      "stage": "motion_shot",
+      "shot_id": "shot_03",
+      "provider": "ffmpeg_ken_burns",
+      "model": "ffmpeg-zoompan",
+      "parameters": {
+        "duration_sec": 7.0,
+        "shot_index": 3
+      },
+      "seed": 10125,
+      "latency_ms": 3696.93,
+      "estimated_cost_usd": 0.0,
+      "cache_hit": false,
+      "status": "fallback",
+      "error": "fallback: ken_burns (no raw Wan 2.2 clip in outputs/clips_raw/)"
+    },
+    {
+      "trace_id": "e9f273f7-6520-4f43-af9a-ea08cd5bcca8",
+      "timestamp_utc": "2026-11-26T12:29:51.845645+00:00",
+      "agent": "VisualConsistencyAgent",
+      "stage": "keyframes",
+      "shot_id": "shot_03",
+      "provider": "cloudflare",
+      "model": "@cf/black-forest-labs/flux-2-klein-4b",
+      "parameters": {
+        "prompt_len": 1694
+      },
+      "seed": 10125,
+      "latency_ms": 12865.5,
+      "estimated_cost_usd": 0.003,
+      "cache_hit": false,
+      "status": "success",
+      "error": null
+    },
+    {
+      "trace_id": "7078291d-ee8d-4ec7-9868-cef030284dd9",
+      "timestamp_utc": "2026-11-26T12:28:29.226316+00:00",
+      "agent": "VisualConsistencyAgent",
+      "stage": "keyframes",
+      "shot_id": "shot_03",
+      "provider": "cloudflare+google-genai",
+      "model": "keyframe-generator",
+      "parameters": {
+        "prompt_len": 1694
+      },
+      "seed": 10125,
+      "latency_ms": 4963.43,
+      "estimated_cost_usd": 0.0,
+      "cache_hit": false,
+      "status": "failed",
+      "error": "Cloudflare failed (@cf/black-forest-labs/flux-1-schnell error: [Errno 11001] getaddrinfo failed); Gemini Image failed (models/gemini-2.5-flash-image error: [Errno 11001] getaddrinfo failed)"
+    },
+    {
+      "trace_id": "b55001a8-bd0b-4ffa-a746-613652bd7a4f",
+      "timestamp_utc": "2026-11-26T12:27:59.545785+00:00",
+      "agent": "AudioVoiceAgent",
+      "stage": "music_score",
+      "shot_id": null,
+      "provider": "classical_synth",
+      "model": "motivational-classical-instrumental",
+      "parameters": {
+        "total_duration_sec": 80.0,
+        "source": "outputs\\music\\score_synth.wav"
+      },
+      "seed": null,
+      "latency_ms": 14632.98,
+      "estimated_cost_usd": 0.0,
+      "cache_hit": false,
+      "status": "fallback",
+      "error": "outputs/music/score.wav missing; synthesized motivational classical instrumental"
+    },
     {
       "trace_id": "bbb77add-0497-4c81-9116-5476801e6d75",
       "timestamp_utc": "2026-11-26T11:08:35.824365+00:00",
@@ -491,159 +645,6 @@
       "latency_ms": 30576.67,
       "estimated_cost_usd": 0.003,
       "cache_hit": false,
-      "status": "success",
-      "error": null
-    },
-    {
-      "trace_id": "api-1795627489",
-      "timestamp_utc": "2026-11-25T17:31:19.581057+00:00",
-      "agent": "VideoEditorAgent",
-      "stage": "assembly_dual_aspect",
-      "shot_id": null,
-      "provider": "ffmpeg",
-      "model": "ffmpeg-dual-aspect-master",
-      "parameters": {
-        "final_16x9": "outputs\\final_16x9.mp4",
-        "final_9x16": "outputs\\final_9x16.mp4"
-      },
-      "seed": null,
-      "latency_ms": 0.0,
-      "estimated_cost_usd": 0.0,
-      "cache_hit": false,
-      "status": "success",
-      "error": null
-    },
-    {
-      "trace_id": "api-1795627489",
-      "timestamp_utc": "2026-11-25T17:26:13.949013+00:00",
-      "agent": "VideoEditorAgent",
-      "stage": "audio_mastering",
-      "shot_id": null,
-      "provider": "ffmpeg",
-      "model": "sidechaincompress-loudnorm",
-      "parameters": {
-        "target_lufs": -14.0,
-        "true_peak_db": -1.0,
-        "intro_offset_sec": 3.0
-      },
-      "seed": null,
-      "latency_ms": 13707.5,
-      "estimated_cost_usd": 0.0,
-      "cache_hit": false,
-      "status": "success",
-      "error": null
-    },
-    {
-      "trace_id": "api-1795627489",
-      "timestamp_utc": "2026-11-25T17:26:11.268342+00:00",
-      "agent": "AudioVoiceAgent",
-      "stage": "music_score",
-      "shot_id": null,
-      "provider": "ffmpeg",
-      "model": "ffmpeg-ambient-fallback",
-      "parameters": {
-        "total_duration_sec": 80.0,
-        "source": "outputs\\music\\score_synth.wav"
-      },
-      "seed": null,
-      "latency_ms": 7271.28,
-      "estimated_cost_usd": 0.0,
-      "cache_hit": false,
-      "status": "fallback",
-      "error": "outputs/music/score.wav missing; using temporary ambient harmonic fallback"
-    },
-    {
-      "trace_id": "api-1795627489",
-      "timestamp_utc": "2026-11-25T17:25:13.373997+00:00",
-      "agent": "AudioVoiceAgent",
-      "stage": "narration",
-      "shot_id": "shot_10",
-      "provider": "cache",
-      "model": "cache-manifest",
-      "parameters": {
-        "shot_hash": "7609dcbec2cffac26a2dd9acb8dc8952e634e6e3021bb4e51e357c01a994c4bb",
-        "language": "en"
-      },
-      "seed": 10110,
-      "latency_ms": 0.5,
-      "estimated_cost_usd": 0.0,
-      "cache_hit": true,
-      "status": "success",
-      "error": null
-    },
-    {
-      "trace_id": "api-1795627489",
-      "timestamp_utc": "2026-11-25T17:25:13.306427+00:00",
-      "agent": "AudioVoiceAgent",
-      "stage": "narration",
-      "shot_id": "shot_09",
-      "provider": "cache",
-      "model": "cache-manifest",
-      "parameters": {
-        "shot_hash": "373aec9cd30f81bcf02866dfb2dab1dbbac9c019fe3cef342576ad9f92db4b56",
-        "language": "en"
-      },
-      "seed": 10109,
-      "latency_ms": 0.5,
-      "estimated_cost_usd": 0.0,
-      "cache_hit": true,
-      "status": "success",
-      "error": null
-    },
-    {
-      "trace_id": "api-1795627489",
-      "timestamp_utc": "2026-11-25T17:25:13.195779+00:00",
-      "agent": "AudioVoiceAgent",
-      "stage": "narration",
-      "shot_id": "shot_08",
-      "provider": "cache",
-      "model": "cache-manifest",
-      "parameters": {
-        "shot_hash": "4ca1d8fa727ed763d9b6fd7fe56540a3e91e1e038a792f4e22055bf4771c62de",
-        "language": "en"
-      },
-      "seed": 10108,
-      "latency_ms": 0.5,
-      "estimated_cost_usd": 0.0,
-      "cache_hit": true,
-      "status": "success",
-      "error": null
-    },
-    {
-      "trace_id": "api-1795627489",
-      "timestamp_utc": "2026-11-25T17:25:13.154625+00:00",
-      "agent": "AudioVoiceAgent",
-      "stage": "narration",
-      "shot_id": "shot_07",
-      "provider": "cache",
-      "model": "cache-manifest",
-      "parameters": {
-        "shot_hash": "77928abb6203f734cf2a31137b2bc842eb4d0719f5c3ec157bb2fbcae8ba4d14",
-        "language": "en"
-      },
-      "seed": 10107,
-      "latency_ms": 0.5,
-      "estimated_cost_usd": 0.0,
-      "cache_hit": true,
-      "status": "success",
-      "error": null
-    },
-    {
-      "trace_id": "api-1795627489",
-      "timestamp_utc": "2026-11-25T17:25:13.086528+00:00",
-      "agent": "AudioVoiceAgent",
-      "stage": "narration",
-      "shot_id": "shot_06",
-      "provider": "cache",
-      "model": "cache-manifest",
-      "parameters": {
-        "shot_hash": "2382f772ed1e19ee5b142da7ff553017d1d3eba854fa820126da0ae261963d62",
-        "language": "en"
-      },
-      "seed": 10106,
-      "latency_ms": 0.5,
-      "estimated_cost_usd": 0.0,
-      "cache_hit": true,
       "status": "success",
       "error": null
     }

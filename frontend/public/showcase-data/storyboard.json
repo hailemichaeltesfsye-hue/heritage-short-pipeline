@@ -71,13 +71,13 @@
         "shot_id": "shot_03",
         "duration_sec": 7.0,
         "shot_type": "medium_wide_shot",
-        "visual_prompt": "A sunny street in Kombolcha town with acacia trees and hills. On the left, a tall 35-year-old Ethiopian mother wearing a dark navy cardigan over a long burgundy dress and modest white headscarf holds hands with her shorter 8-year-old son Hailemichael walking on the right (warm brown skin, close-cropped black hair, wearing a crisp white collared shirt under a cream handwoven cotton gabi shawl with patterned border) outside an elementary school gate.",
+        "visual_prompt": "A sunny street in Kombolcha town with acacia trees and hills. On the left, an authentic Ethiopian Orthodox Christian schoolteacher mother (35 years old, warm brown skin, uncovered natural black hair styled in neat traditional Ethiopian cornrow braids shuruba, strictly no hijab, no tight headscarf, no head wrap around chin or neck, bare head, face and neck completely visible, wearing a delicate small silver Ethiopian Orthodox cross necklace, a dark navy cardigan over a modest burgundy dress with a white handwoven Ethiopian netela shawl with subtle woven tibeb border draped loosely over her shoulders, carrying a teacher lesson notebook under her arm). She walks warmly holding hands with her shorter 9-year-old son Hailemichael walking on the right (warm brown skin, close-cropped black hair, wearing a crisp white collared shirt under a cream handwoven cotton gabi shawl with patterned border) outside an elementary school gate. Warm golden morning sunlight, cinematic 35mm documentary realism.",
         "motion_prompt": "Smooth lateral tracking shot following mother and son as they approach the new school building.",
         "narration_am": "መምህር የነበረችው እናቴ ወደ ኮምቦልቻ ስትዛወር፣ አምስተኛ ክፍሌን ቁጥር አንድ ጀመርኩ።",
         "narration_en": "When my mother, a dedicated schoolteacher, transferred to Kombolcha, I entered Grade Five at Kombolcha Number One.",
         "subtitle_en": "When my teacher mother moved to Kombolcha, I continued Grade 5 there.",
         "reason": "Marks family relocation to Kombolcha and mother's inspiring teaching influence.",
-        "seed": 10123
+        "seed": 10125
       },
       {
         "shot_id": "shot_04",

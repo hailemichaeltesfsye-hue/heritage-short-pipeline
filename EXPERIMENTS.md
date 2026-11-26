@@ -55,3 +55,14 @@
 - **Warm Run Duration (1 Shot Modified)**: Single-shot SHA-256 cache invalidation re-runs only the modified shot's keyframe, narration, and video, re-assembling masters in ~35–48s.
 - **Total Pipeline Spend to Date**: 15 live Cloudflare FLUX keyframe generations at ~$0.003/image = ~$0.045 USD total cost.
 
+## 11. Motivational Classical Score & Cultural Authenticity Refinement
+- **Objective**: Upgrade the background score from basic synth tones to an uplifting, motivational classical cinematic instrumental and refine `shot_03` for authentic Ethiopian Orthodox Christian schoolteacher iconography.
+- **Score Synthesis**: Built a pure acoustic classical synthesizer in `pipeline/music.py` featuring:
+  - Multi-harmonic piano arpeggios in D Major with percussive hammer strike and natural exponential decay.
+  - Sustained warm cello and violin string pads with 5.2 Hz acoustic vibrato.
+  - Dynamic crescendo progression transitioning across 3 narrative phases (Childhood -> Theological Study -> Software Engineering triumph).
+  - Soft concert hall reverb (`aecho`) and acoustic equalization.
+- **Calibrated Ducking**: Configured `volume=0.316` (-10 dB) during the 3.0s opening title card and 3.0s closing AI slate, smoothly ducking to `-20 dB` via `sidechaincompress` during voice narration.
+- **Visual Iconography**: Enforced uncovered hair with neat traditional Ethiopian cornrow braids (`shuruba`), delicate silver Orthodox cross necklace, and loosely draped white `netela` shawl in `shot_03` visual prompt, completely removing headscarf/hijab ambiguity.
+
+

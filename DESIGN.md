@@ -77,12 +77,28 @@ A 1:25 work-in-progress cut of *The Heritage Short* was shared with peer enginee
    - Re-assembled dual-aspect masters (`final_16x9.mp4`, `final_9x16.mp4`, `final_16x9_am.mp4`, `final_9x16_am.mp4`, `radio_cut.mp4`) with `-movflags +faststart`.
    - Re-exported static showcase bundle to `frontend/public/showcase-data/`.
 
+### Cultural Authenticity & Motivational Classical Score Refinement
+Following V2 reviews, two targeted refinements were integrated:
+1. **Authentic Ethiopian Orthodox Christian Teacher Representation (`shot_03`)**:
+   - Resolved visual ambiguity where the mother appeared with a tight headscarf/hijab wrap.
+   - Refined prompt to reflect authentic Ethiopian Orthodox Christian schoolteacher iconography: uncovered natural hair in traditional cornrow braids (`shuruba`), delicate silver Ethiopian Orthodox cross necklace, white handwoven `netela` shawl draped loosely over shoulders (leaving head, hair, and neck completely visible), modest teacher dress, and lesson notebook.
+   - Regenerated keyframe and motion shot with seed `10125`, achieving full cultural fidelity.
+2. **Motivational Classical Cinematic Instrumental Score**:
+   - Upgraded audio synthesis in `pipeline/music.py` from basic fallback sines to a multi-layered, uplifting classical instrumental:
+     - Warm, expressive acoustic piano arpeggios in D Major.
+     - Sustained warm cello and string pads with natural vibrato and gentle chord swells.
+     - Emotional 3-phase arc: reflective childhood in Delanta (0–30s), expanding harmonic richness during Abinet training (30–55s), and a soaring motivational climax for Software Engineering and direct address (55–80s).
+     - Applied soft concert hall reverb (`aecho`) and warm acoustic equalization.
+   - Strict ducking calibration in `pipeline/assemble.py`:
+     - Plays gently at `-10 dB` (`volume=0.316`) during the 3.0s opening title card and 3.0s closing AI slate.
+     - Ducks cleanly to `-20 dB` via `sidechaincompress` (`ratio=10`, `threshold=0.015`, `attack=60ms`, `release=1200ms`) whenever narration speaks, ensuring 100% speech intelligibility.
+
 ### User Test 2
 ```markdown
 [PENDING - COLLECT 3 PEER REACTIONS ON V2]
-- Target: Validate V2 cut with voice-first audio ducking and childhood character visual lock
-- Reviewer 1 (Audio/Music Balance): [Pending Slack Review]
-- Reviewer 2 (Childhood Visual Flow): [Pending Slack Review]
-- Reviewer 3 (Overall Narrative Impact): [Pending Slack Review]
+- Target: Validate V2 cut with voice-first audio ducking, motivational classical score, and authentic cultural iconography
+- Reviewer 1 (Classical Score & Audio Ducking Balance): [Pending Slack Review]
+- Reviewer 2 (Childhood & Mother Cultural Consistency): [Pending Slack Review]
+- Reviewer 3 (Overall Narrative Impact & Climax): [Pending Slack Review]
 ```
 

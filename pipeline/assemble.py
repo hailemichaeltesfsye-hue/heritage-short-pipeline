@@ -435,15 +435,16 @@ def mix_audio_with_ducking_and_loudnorm(
         trace_id=trace_id,
     )
 
-    # Voice-first loudness normalization + strong sidechain suppression so score never competes with narration
-    # Normalize voice track to ~-14 LUFS first, attenuate score by ~-14dB (volume=0.20),
-    # and apply tight sidechain compression (threshold=0.01, ratio=12, fast attack=60ms, smooth release=1500ms).
+    # Motivational classical score ducking:
+    # Score plays gently at -10 dB (volume=0.316) during opening title card & closing AI slate,
+    # and ducks cleanly to -20 dB (sidechaincompress ratio=10, threshold=0.015, attack=60ms, release=1200ms)
+    # whenever English or Amharic narration is speaking.
     fade_in_sec = min(2.0, max(0.5, intro_duration_sec))
     ducking_filter = (
         "[0:a]acompressor=threshold=-20dB:ratio=2.2:attack=10:release=120:makeup=3dB,"
         "loudnorm=I=-14:TP=-1.5:LRA=8,asplit=2[voice_mix][voice_sc];"
-        f"[1:a]afade=t=in:st=0:d={fade_in_sec:.1f},volume=0.20[score_bed];"
-        "[score_bed][voice_sc]sidechaincompress=threshold=0.01:ratio=12:attack=60:release=1500[ducked_score];"
+        f"[1:a]afade=t=in:st=0:d={fade_in_sec:.1f},volume=0.316[score_bed];"
+        "[score_bed][voice_sc]sidechaincompress=threshold=0.015:ratio=10:attack=60:release=1200[ducked_score];"
         "[voice_mix][ducked_score]amix=inputs=2:duration=first:normalize=0:dropout_transition=2,"
         "alimiter=limit=0.88:attack=5:release=50[master]"
     )
