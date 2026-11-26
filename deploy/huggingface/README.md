@@ -13,10 +13,11 @@ pinned: false
 Autobiographical Amharic short film authored by Hailemichael Tesfaye, produced via a production-grade multi-agent AI filmmaking orchestrator.
 
 ## Live Showcase Features
-1. **Cinema Screening Room**: Dual-aspect video player (`16:9 Cinema Master` and `9:16 Vertical Safe`) + Radio Cut preview with Amharic speech and English subtitles.
-2. **Storyboard Contract & Shot Lab**: Full 10-shot inspection with prompt definitions, seeds, and keyframe stills.
+1. **Cinema Screening Room**: Dual-aspect video player (`16:9 Cinema Master` and `9:16 Vertical Safe`) + Radio Cut preview with Dual-Language Audio Switcher (English Primary + Amharic Optional) and synchronized burned English subtitles.
+2. **Storyboard Contract & Shot Lab**: Full 10-shot inspection with prompt definitions, seeds, keyframe stills, and dual-language narration tracks (`narration_en` & `narration_am`).
 3. **Pipeline Observability**: Real telemetry records parsed from `runs.jsonl`, latency metrics, model distributions, and estimated USD compute expenses.
 4. **Engineering Journals**: Direct access to `DESIGN.md`, `ARCHITECTURE.md`, `EXPERIMENTS.md`, `FAILURES.md`, `COSTS.md`, and `ETHICS.md`.
+5. **Live Vercel Mirror**: Hosted showcase app available at [https://heritage-short-pipeline-rouge.vercel.app/](https://heritage-short-pipeline-rouge.vercel.app/).
 
 ## Deployment Instructions
 To deploy updates to this Hugging Face Space:
