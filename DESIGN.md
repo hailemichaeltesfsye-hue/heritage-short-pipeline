@@ -93,12 +93,20 @@ Following V2 reviews, two targeted refinements were integrated:
      - Plays gently at `-10 dB` (`volume=0.316`) during the 3.0s opening title card and 3.0s closing AI slate.
      - Ducks cleanly to `-20 dB` via `sidechaincompress` (`ratio=10`, `threshold=0.015`, `attack=60ms`, `release=1200ms`) whenever narration speaks, ensuring 100% speech intelligibility.
 
-### User Test 2
-```markdown
-[PENDING - COLLECT 3 PEER REACTIONS ON V2]
-- Target: Validate V2 cut with voice-first audio ducking, motivational classical score, and authentic cultural iconography
-- Reviewer 1 (Classical Score & Audio Ducking Balance): [Pending Slack Review]
-- Reviewer 2 (Childhood & Mother Cultural Consistency): [Pending Slack Review]
-- Reviewer 3 (Overall Narrative Impact & Climax): [Pending Slack Review]
-```
+### User Test 2 (V3 In-Person Screening)
+The updated V3 cut — incorporating the childhood visual-lock, authentic Ethiopian Orthodox Christian teacher iconography (`shot_03`), and motivational classical D-Major instrumental score with strict voice-first ducking — was screened in person with three peer reviewers on 2026-11-26.
+
+#### Participants (n=3)
+- **Yonas**
+- **Solomon**
+- **Eyoab**
+
+#### Feedback Received
+All three viewers confirmed improvement across all three refined dimensions:
+- **Visual Continuity**: Confirmed improved visual coherence across childhood shots — the character lock is working.
+- **Cultural Authenticity**: Authentic representation of the mother figure in `shot_03` was positively noted.
+- **Audio Clarity**: Clear voice intelligibility over the suppressed classical background score was acknowledged. General response: *"Good, keep it up."*
+
+#### Outcome
+No new corrective action required. V3 is considered production-ready for submission and public showcase at `https://heritage-short-pipeline-rouge.vercel.app/`.
 
