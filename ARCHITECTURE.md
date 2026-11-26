@@ -46,3 +46,27 @@ The pipeline follows a directed state graph orchestrated via LangGraph:
 | `AudioVoiceAgent` | Generates dual-language narration: English primary (`en-US-AndrewMultilingualNeural`, `-6%` rate, `-2Hz`) into `outputs/narration/en/`, optional Amharic (`gemini-3.8-flash` AUDIO with `edge-tts` `am-ET-AmehaNeural` `-10%` rate fallback) into `outputs/narration/am/`, or normalized native human overrides (`outputs/narration_recorded/{lang}/`). | Honest `status="fallback"` / `provider="human-recorded"` telemetry; fails loudly if audio is silent. |
 | `QualityCriticAgent` | Verifies audio duration (`>0.1s`) AND normalized WAV RMS amplitude (`>= 0.001` in live mode). | Invalidates cache and routes back to `AudioVoiceAgent` up to 3x, or halts graph before assembly. |
 | `VideoEditorAgent` | Renders 3s Classical Opening Title Intro Card, prepares motion shots (Wan 2.2 or Ken Burns), offsets narration & `.srt` by `+3.0s`, applies score ducking + `-14 LUFS` loudnorm, burns subtitles inside safe margins, appends 3s AI end card, and exports English (`final_16x9.mp4` / `final_9x16.mp4`) & Amharic (`final_16x9_am.mp4` / `final_9x16_am.mp4`). | Varied-direction Ken Burns zoompan fallback and sidechaincompress fallback. |
+
+## 3. Single-Command Reproducibility
+
+The entire multi-agent pipeline is deterministic, cached via SHA-256 shot hashing, and executable via single commands:
+
+```bash
+# Complete end-to-end production (dual-language + dual-aspect masters)
+make film
+
+# Equivalent direct CLI invocation
+uv run python -m pipeline.run run --stage all --language both
+
+# Stage-isolated execution
+uv run python -m pipeline.run run --stage keyframes
+uv run python -m pipeline.run run --stage narration --language both
+uv run python -m pipeline.run run --stage shots
+uv run python -m pipeline.run run --stage music
+uv run python -m pipeline.run run --stage assemble --language both
+
+# Export static showcase bundle for Vercel
+make export-showcase
+# or: uv run python pipeline/export_showcase.py
+```
+

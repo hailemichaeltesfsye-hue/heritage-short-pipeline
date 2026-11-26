@@ -435,13 +435,17 @@ def mix_audio_with_ducking_and_loudnorm(
         trace_id=trace_id,
     )
 
-    # Gentle score fade-in during opening intro card, sidechain ducked when voice speaks, -14 LUFS loudnorm
+    # Voice-first loudness normalization + strong sidechain suppression so score never competes with narration
+    # Normalize voice track to ~-14 LUFS first, attenuate score by ~-14dB (volume=0.20),
+    # and apply tight sidechain compression (threshold=0.01, ratio=12, fast attack=60ms, smooth release=1500ms).
     fade_in_sec = min(2.0, max(0.5, intro_duration_sec))
     ducking_filter = (
-        f"[1:a]afade=t=in:st=0:d={fade_in_sec:.1f}[score_faded];"
-        "[score_faded][0:a]sidechaincompress=threshold=0.02:ratio=6:attack=300:release=1500[ducked_score];"
-        "[0:a][ducked_score]amix=inputs=2:duration=first:dropout_transition=2[mixed_pre];"
-        "[mixed_pre]loudnorm=I=-14:TP=-1.0:LRA=11[master]"
+        "[0:a]acompressor=threshold=-20dB:ratio=2.2:attack=10:release=120:makeup=3dB,"
+        "loudnorm=I=-14:TP=-1.5:LRA=8,asplit=2[voice_mix][voice_sc];"
+        f"[1:a]afade=t=in:st=0:d={fade_in_sec:.1f},volume=0.20[score_bed];"
+        "[score_bed][voice_sc]sidechaincompress=threshold=0.01:ratio=12:attack=60:release=1500[ducked_score];"
+        "[voice_mix][ducked_score]amix=inputs=2:duration=first:normalize=0:dropout_transition=2,"
+        "alimiter=limit=0.88:attack=5:release=50[master]"
     )
 
     cmd_mix = [
@@ -457,7 +461,7 @@ def mix_audio_with_ducking_and_loudnorm(
         cmd_fallback = [
             "-i", str(narration_concat),
             "-i", str(norm_score),
-            "-filter_complex", "[0:a]volume=1.0[a0];[1:a]volume=0.25[a1];[a0][a1]amix=inputs=2[master]",
+            "-filter_complex", "[0:a]volume=1.5[a0];[1:a]volume=0.10[a1];[a0][a1]amix=inputs=2:normalize=0[master]",
             "-map", "[master]",
             "-t", str(total_film_duration),
             "-y", str(resolved_master),
@@ -622,10 +626,11 @@ def assemble_full_dual_aspect_pipeline(
         "-vf", f"subtitles='{escaped_srt}':force_style='{sub_style_16x9}'",
         "-c:v", "libx264",
         "-preset", "medium",
-        "-crf", "20",
+        "-crf", "22",
         "-pix_fmt", "yuv420p",
         "-c:a", "aac",
         "-b:a", "192k",
+        "-movflags", "+faststart",
         "-shortest",
         "-y", str(final_16x9),
     ]
@@ -640,6 +645,7 @@ def assemble_full_dual_aspect_pipeline(
             "-pix_fmt", "yuv420p",
             "-c:a", "aac",
             "-b:a", "192k",
+            "-movflags", "+faststart",
             "-shortest",
             "-y", str(final_16x9),
         ]
@@ -661,7 +667,7 @@ def assemble_full_dual_aspect_pipeline(
         "-vf", "crop=ih*9/16:ih:(iw-ih*9/16)/2:0,scale=1080:1920,setsar=1",
         "-c:v", "libx264",
         "-preset", "fast",
-        "-crf", "21",
+        "-crf", "22",
         "-pix_fmt", "yuv420p",
         "-y", str(shots_body_9x16),
     ])
@@ -686,10 +692,11 @@ def assemble_full_dual_aspect_pipeline(
         "-vf", f"subtitles='{escaped_srt}':force_style='{sub_style_9x16}'",
         "-c:v", "libx264",
         "-preset", "medium",
-        "-crf", "21",
+        "-crf", "22",
         "-pix_fmt", "yuv420p",
         "-c:a", "aac",
         "-b:a", "192k",
+        "-movflags", "+faststart",
         "-shortest",
         "-y", str(final_9x16),
     ])
@@ -702,6 +709,7 @@ def assemble_full_dual_aspect_pipeline(
             "-c:v", "copy",
             "-c:a", "aac",
             "-b:a", "192k",
+            "-movflags", "+faststart",
             "-shortest",
             "-y", str(final_9x16),
         ])

@@ -3,5 +3,11 @@
   "buildCommand": "cd frontend && npm install && npm run build",
   "outputDirectory": "frontend/dist",
   "installCommand": "echo 'install handled in buildCommand'",
-  "framework": null
+  "framework": null,
+  "rewrites": [
+    {
+      "source": "/((?!showcase-data/|assets/).*)",
+      "destination": "/index.html"
+    }
+  ]
 }

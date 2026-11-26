@@ -5,7 +5,7 @@
 all: film
 
 film:
-	uv run python -m pipeline.run --stage all
+	uv run python -m pipeline.run run --stage all --language both
 
 validate:
 	uv run python -m pipeline.run validate

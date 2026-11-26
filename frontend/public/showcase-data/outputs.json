@@ -7,9 +7,6 @@
     "radio_cut.mp4": true,
     "subtitles.srt": true,
     "subtitles_am.srt": true,
-    "audio_master_mixed.wav": true,
-    "audio_master_mixed_am.wav": true,
-    "music/score_normalized.wav": true,
     "reference/character_sheet.png": true
   },
   "keyframes": [

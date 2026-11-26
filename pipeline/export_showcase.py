@@ -49,6 +49,8 @@ def export_showcase_bundle() -> Path:
         json.dump(docs_data, f, indent=2, ensure_ascii=False)
 
     # 4. Copy Real Available Media Assets & build availability manifest
+    # Note: omit large uncompressed ~31MB full-film master WAV mixes and duplicate legacy stems
+    # so static git/Vercel showcase stays fast & compact while keeping every MP4, keyframe, and stem.
     media_files_to_copy = [
         "final_16x9.mp4",
         "final_9x16.mp4",
@@ -57,9 +59,6 @@ def export_showcase_bundle() -> Path:
         "radio_cut.mp4",
         "subtitles.srt",
         "subtitles_am.srt",
-        "audio_master_mixed.wav",
-        "audio_master_mixed_am.wav",
-        "music/score_normalized.wav",
         "reference/character_sheet.png",
     ]
 
@@ -95,7 +94,11 @@ def export_showcase_bundle() -> Path:
 
     narration_en = _copy_wavs(OUTPUTS_DIR / "narration" / "en", media_dir / "narration" / "en")
     narration_am = _copy_wavs(OUTPUTS_DIR / "narration" / "am", media_dir / "narration" / "am")
-    narration_legacy = _copy_wavs(OUTPUTS_DIR / "narration", media_dir / "narration")
+    narration_legacy = (
+        []
+        if (narration_en or narration_am)
+        else _copy_wavs(OUTPUTS_DIR / "narration", media_dir / "narration")
+    )
 
     with open(FRONTEND_PUBLIC_DIR / "outputs.json", "w", encoding="utf-8") as f:
         json.dump(

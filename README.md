@@ -124,7 +124,7 @@ Key variables:
 ## One-Command Film Generation
 Run the entire end-to-end pipeline with one command:
 ```bash
-uv run python -m pipeline.run --stage all
+uv run python -m pipeline.run run --stage all --language both
 ```
 Or via Makefile:
 ```bash
@@ -134,13 +134,16 @@ make film
 ### Granular CLI Stages
 ```bash
 # Dry run verification
-uv run python -m pipeline.run --dry-run
+uv run python -m pipeline.run run --dry-run
 
 # Keyframe generation only
-uv run python -m pipeline.run --stage keyframes
+uv run python -m pipeline.run run --stage keyframes
 
 # Narration generation only (English primary, Amharic optional, or both)
 uv run python -m pipeline.run run --stage narration --language both
+
+# Motion clips generation (Wan 2.2 / Ken Burns)
+uv run python -m pipeline.run run --stage shots
 
 # Audio & score mastering only
 uv run python -m pipeline.run run --stage music
@@ -149,7 +152,7 @@ uv run python -m pipeline.run run --stage music
 uv run python -m pipeline.run run --stage assemble --language both
 
 # Single shot targeted regeneration
-uv run python -m pipeline.run --shot shot_04 --force
+uv run python -m pipeline.run run --stage keyframes --shot shot_04 --force
 
 # Storyboard validation
 uv run python -m pipeline.run validate

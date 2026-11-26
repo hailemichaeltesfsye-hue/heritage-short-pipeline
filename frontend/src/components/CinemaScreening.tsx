@@ -154,8 +154,8 @@ export const CinemaScreening: React.FC<CinemaScreeningProps> = ({
               type="button"
               onClick={() => setSelectedLang('en')}
               className={`px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${selectedLang === 'en'
-                  ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
-                  : 'text-zinc-400 hover:text-zinc-200'
+                ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
+                : 'text-zinc-400 hover:text-zinc-200'
                 }`}
             >
               English (Primary)
@@ -164,8 +164,8 @@ export const CinemaScreening: React.FC<CinemaScreeningProps> = ({
               type="button"
               onClick={() => setSelectedLang('am')}
               className={`px-2.5 py-1.5 rounded-md text-xs font-medium font-ethiopic transition-colors whitespace-nowrap ${selectedLang === 'am'
-                  ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
-                  : 'text-zinc-400 hover:text-zinc-200'
+                ? 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
+                : 'text-zinc-400 hover:text-zinc-200'
                 }`}
             >
               አማርኛ (Amharic)
@@ -178,8 +178,8 @@ export const CinemaScreening: React.FC<CinemaScreeningProps> = ({
               type="button"
               onClick={() => setAspectRatio('16x9')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${aspectRatio === '16x9'
-                  ? 'bg-zinc-800 text-zinc-100 border border-white/10'
-                  : 'text-zinc-400 hover:text-zinc-200'
+                ? 'bg-zinc-800 text-zinc-100 border border-white/10'
+                : 'text-zinc-400 hover:text-zinc-200'
                 }`}
             >
               <Monitor className="w-3.5 h-3.5" />
@@ -189,8 +189,8 @@ export const CinemaScreening: React.FC<CinemaScreeningProps> = ({
               type="button"
               onClick={() => setAspectRatio('9x16')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${aspectRatio === '9x16'
-                  ? 'bg-zinc-800 text-zinc-100 border border-white/10'
-                  : 'text-zinc-400 hover:text-zinc-200'
+                ? 'bg-zinc-800 text-zinc-100 border border-white/10'
+                : 'text-zinc-400 hover:text-zinc-200'
                 }`}
             >
               <Smartphone className="w-3.5 h-3.5" />
@@ -200,8 +200,8 @@ export const CinemaScreening: React.FC<CinemaScreeningProps> = ({
               type="button"
               onClick={() => setAspectRatio('radio_cut')}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors whitespace-nowrap ${aspectRatio === 'radio_cut'
-                  ? 'bg-zinc-800 text-zinc-100 border border-white/10'
-                  : 'text-zinc-400 hover:text-zinc-200'
+                ? 'bg-zinc-800 text-zinc-100 border border-white/10'
+                : 'text-zinc-400 hover:text-zinc-200'
                 }`}
             >
               <Radio className="w-3.5 h-3.5" />
@@ -224,6 +224,7 @@ export const CinemaScreening: React.FC<CinemaScreeningProps> = ({
                       key={videoSrc}
                       controls
                       playsInline
+                      preload="metadata"
                       onError={() => setVideoError(true)}
                       className="w-full h-full object-cover bg-black"
                       src={videoSrc}
@@ -251,6 +252,7 @@ export const CinemaScreening: React.FC<CinemaScreeningProps> = ({
                   key={videoSrc}
                   controls
                   playsInline
+                  preload="metadata"
                   onError={() => setVideoError(true)}
                   className="w-full h-full object-contain bg-black"
                   src={videoSrc}
@@ -300,8 +302,8 @@ export const CinemaScreening: React.FC<CinemaScreeningProps> = ({
                     onClick={() => setCurrentShotIndex(idx)}
                     title={`${shot.shot_id} — ${shot.subtitle_en}`}
                     className={`group relative aspect-video rounded-md overflow-hidden border text-left transition-all ${isSelected
-                        ? 'border-amber-500 ring-1 ring-amber-500/30 bg-zinc-900'
-                        : 'border-white/10 bg-[#111114] hover:border-white/25'
+                      ? 'border-amber-500 ring-1 ring-amber-500/30 bg-zinc-900'
+                      : 'border-white/10 bg-[#111114] hover:border-white/25'
                       }`}
                   >
                     {hasKeyframe ? (
@@ -495,7 +497,7 @@ export const CinemaScreening: React.FC<CinemaScreeningProps> = ({
               <div className="p-8 rounded-lg border border-white/10 bg-[#09090b] text-center space-y-2">
                 <p className="text-sm text-zinc-300">Character reference sheet not yet rendered</p>
                 <p className="text-xs text-zinc-500 font-mono">
-                  uv run python -m pipeline.run --stage keyframes
+                  uv run python -m pipeline.run run --stage keyframes
                 </p>
               </div>
             )}
